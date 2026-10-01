@@ -1,0 +1,31 @@
+{
+ "mylapore_streets": [
+  "Mylapore",
+  "search:Mylapore street"
+ ],
+ "temple": [
+  "Kapaleeshwarar Temple",
+  "Kapaleeshwarar Temple tank"
+ ],
+ "marina": [
+  "Marina Beach"
+ ],
+ "autos": [
+  "search:auto rickshaw Chennai"
+ ],
+ "shops": [
+  "Shops in Chennai"
+ ],
+ "buses": [
+  "search:MTC bus Chennai"
+ ],
+ "kolam": [
+  "Kolam"
+ ],
+ "chennai_streets": [
+  "search:Chennai street traffic"
+ ],
+ "tn_villages": [
+  "search:Thanjavur village paddy"
+ ]
+}

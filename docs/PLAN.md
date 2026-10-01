@@ -1,0 +1,62 @@
+# GTIndian roadmap (status per item)
+
+Legend: [x] done · [~] partial · [ ] todo
+
+## Phase 0: Foundation
+- [x] Repo, Vite/TS/pnpm, three r186 WebGPU and Rapier installed
+- [x] CLAUDE.md, BRIEF.md, docs skeleton
+- [x] Playwright harness with screenshots and stats JSON (`tools/harness`)
+- [x] Stats overlay (fps, draws, tris, heap, NPC/vehicle counts)
+- [x] OSM pipeline (Overpass fetch to region pack, Mylapore & Marina)
+- [x] Reference research (Commons) and STYLE_BIBLE with numeric rules
+- [x] Spike: WebGPU + Rapier + 10k instanced animated people (25–30 fps on UHD 620 with full post)
+
+## Phase 1: Core engine
+- [ ] City pack format (pack.json, style.json) and region loader
+- [ ] Chunk streamer with a Web Worker building-mesh generator and LOD rings
+- [ ] Ground, roads (OSM widths, junction patches, kerbs, markings), water, sea and beach
+- [ ] Physics world: static building colliders per chunk, ground
+- [ ] Player on foot (Rapier kinematic controller): walk, run, jump
+- [ ] Cameras: third-person, first-person, top-down; settings switch
+- [ ] Day/night integrated (time controls)
+- [ ] Vehicles: raycast physics for auto (3-wheel, tippy), bike (2-wheel, lean assist), car; enter and exit
+- [ ] Acceptance: walk and drive across streamed chunks without hitches (harness drive test)
+
+## Phase 2: Chennai slice (Mylapore + Marina)
+- [ ] Procedural buildings: residential, commercial, agraharam, old house, apartment, institution, informal; chajjas, grilles, balconies, AC units, roof tanks, parapets, weathering shader
+- [ ] Shop fronts with unique Tamil + English signboards (sign atlas), shutters, awnings, tube lights, stock
+- [ ] Props: poles, cables, street lights, posters, parked two-wheelers, crates, carts, drains, speed breakers, potholes
+- [ ] Kapaleeshwarar temple: gopurams, mandapam, kaavi walls, tank with steps and neerazhi mandapam
+- [ ] Marina: sand, promenade, lighthouse, vendor carts, catamarans, sea shader
+- [ ] Churches (San Thome, Luz), MRTS elevated line
+- [ ] Night lighting: street lights, shop tubes, window glow
+- [ ] Density audit tool (BRIEF §15 per-100 m quotas); screenshot review against refs
+
+## Phase 3: Life
+- [ ] Pedestrian sim on footpaths and road edges, crossing with a raised hand, idle behaviours, schedules
+- [ ] Traffic sim on the OSM graph: gap-seeking, two-wheeler filtering, horns, signals, jams
+- [ ] Vehicle fleet models (35+) with liveries and wear
+- [ ] Animals: dogs, cows, crows, goats
+- [ ] Vendors and stalls with calls
+- [ ] Ambience audio layers, spatial audio, radio (2+ stations)
+- [ ] Weather: rain, wet roads, waterlogging, monsoon, power cuts
+- [ ] Acceptance: 1,500+ visible people and jams at target fps
+
+## Phase 4: Crime and police
+- [ ] Melee and firearms, hit reactions and ragdolls, cover
+- [ ] Heat levels 1–4 with TN police AI and roadblocks
+- [ ] Bribe negotiation system
+- [ ] Respect rules: no combat in worship spaces; animals and children are excluded
+
+## Phase 5: Voice and language
+- [ ] i18n system: voice, subtitle and UI languages independent (ta, te, hi, ml, kn, en)
+- [ ] Character voice registry (data/characters/*.json)
+- [ ] TTS pipeline (Indic Parler-TTS) with Opus encoding; barks; lip sync
+
+## Phase 6: Act 1
+- [ ] Missions 1–11, phone and messaging, safehouse, economy
+
+## Phase 7: Village (Act 2)
+## Phase 8: Full Chennai
+## Phase 9: Act 3 and politics
+## Phase 10: Second city pack
