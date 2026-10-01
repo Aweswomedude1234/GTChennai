@@ -6,3 +6,5 @@ data/refs/images/
 tools/**/__pycache__/
 *.log
 test-results/
+docs/screens/dev/
+godot/.godot/

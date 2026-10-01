@@ -14,14 +14,14 @@ Legend: [x] done · [~] partial · [ ] todo
 ## Engine switch (2026-10): port to Godot 4 on Mac (see PROGRESS.md "Porting plan"). Phase 1+ items now refer to the Godot build; [~] marks the three.js prototype.
 
 ## Phase 1: Core engine
-- [~] City pack format (pack.json, style.json, names.json) and region loader
-- [~] Chunk streamer with a Web Worker building-mesh generator and LOD rings
-- [~] Ground, roads (OSM widths, junction patches, kerbs, markings), water, sea and beach
-- [~] Physics world: static building colliders per chunk, ground
-- [ ] Player on foot (Rapier kinematic controller): walk, run, jump
-- [ ] Cameras: third-person, first-person, top-down; settings switch
-- [ ] Day/night integrated (time controls)
-- [ ] Vehicles: raycast physics for auto (3-wheel, tippy), bike (2-wheel, lean assist), car; enter and exit
+- [x] City pack format (pack.json, style.json, names.json) and region loader (Godot)
+- [x] Chunk streamer (WorkerThreadPool building generator, near/far rings, upload budget)
+- [x] Ground, roads (OSM widths, junction patches, kerbs, markings), tank, sea and beach
+- [x] Physics world (Jolt): ground/beach/tank/kerb colliders, per-chunk building shells
+- [x] Player on foot (CharacterBody3D): walk, jog, sprint, jump, step-up
+- [x] Cameras: third-person, first-person, top-down; settings switch (C)
+- [x] Day/night integrated (time controls [ ])
+- [x] Vehicles: raycast physics for auto (3-wheel, tippy), bike (2-wheel, lean controller), car; enter and exit
 - [ ] Acceptance: walk and drive across streamed chunks without hitches (harness drive test)
 
 ## Phase 2: Chennai slice (Mylapore + Marina)

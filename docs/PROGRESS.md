@@ -1,6 +1,15 @@
 # Progress log
 
-> **Read this first.** It is the handoff from the Windows ThinkPad (Intel UHD 620) sessions to the **MacBook Air M5, 24 GB**. Repo: https://github.com/Aweswomedude1234/GTChennai (private).
+> **Read this first.** Current state and next steps are at the top; history below.
+
+## Current state (2026-10-01, session 2 — Godot port)
+- **Engine: Godot 4.7.2** (owner confirmed). Project in `godot/`; see CLAUDE.md for commands.
+- **Ported:** city pack + region loader, ground/areas/roads/junctions/footpaths/kerbs, stepped temple tank with kaavi-striped wall, beach slope, animated sea, procedural buildings (cells, chajjas, balconies with grilles and drying clothes, AC units, drain pipes, meter boards, parapets, tile roofs, roof tanks/mumty/dish/clothes lines/mobile towers), shop fronts with Tamil+English sign atlases, near/far chunk streaming on worker threads with building colliders, Chennai day/night sky + fog + global shader uniforms.
+- **New in Godot:** player on foot (CharacterBody3D, step-up), camera rig (third/first/top), raycast vehicles (auto 3-wheel tippy, bike with lean controller, hatchback car), enter/exit, autopilot on the road graph, HUD with street names, harness with scene/drive tests, asset studio.
+- **Next (in order):** (1) OSM building **infill** — OSM misses most buildings, so streets read as empty lots; (2) street detail (poles + cable tangles, street lights, trees, compound walls/gates, parked two-wheeler rows, posters, stalls, drains, speed breakers); (3) building variety (setbacks, staircases, pillars, shading bands); (4) Phase 1 acceptance run and tag `phase1`; then Phase 2 per PLAN.md, with the realistic-human pipeline (MPFB in Blender) as a parallel track.
+- **Pushing:** this session cannot push yet (Claude GitHub app lacks write access to the repo); commits are local until the owner installs the app. If you are a later session with access, push `main`.
+
+## Handoff from session 1 (ThinkPad, three.js)
 
 ## Status at handoff (2026-10-01)
 
@@ -73,3 +82,9 @@ The first Mac task is to confirm Godot with the owner if they haven't already, i
 ## Session log
 ### Session 1 (2026-10-01, ThinkPad)
 Phase 0 complete and tagged. Phase 1 partly built (above). STYLE_BIBLE v1 written from 16 Commons references. The local-test note for the crowd: dress mix reads correctly. Missing: faces, hand detail and gait variety (acceptable for mid and far tiers only).
+
+### Session 2 (2026-10-01, cloud workspace + Mac link)
+- Installed Godot 4.7.2 (Linux build) with Mesa lavapipe + Xvfb for headless screenshots. Fonts re-fetched as full TTFs. Procedural texture set generated.
+- Ported Phase 1 to Godot (see Current state). Fixed: camera-rig spring arm override, ground vertex blow-up near tanks, harness idle detection.
+- Drive test (auto, 30 s sim): 169 m, 19 chunks streamed, no flips. Performance numbers in the cloud are software-rendered and not meaningful; measure on the Mac.
+- Local test notes: streets look empty — OSM building coverage in Mylapore is partial; infill is the top priority.

@@ -1,0 +1,4 @@
+.godot/
+*.import.tmp
+/android/
+export/

@@ -1,37 +1,40 @@
 # GTIndian — project memory
 
-An open-world crime game set in an authentic South India (Chennai first). It runs in the browser. The full brief is in `BRIEF.md`; the roadmap is in `docs/PLAN.md`; the session log and next steps are in `docs/PROGRESS.md`. **Read `docs/PROGRESS.md` first every session.**
+An open-world crime game set in an authentic South India (Chennai first). Native **Godot 4.7** (Forward+, Metal on the Mac). The full brief is in `BRIEF.md`; the roadmap is in `docs/PLAN.md`; the session log and next steps are in `docs/PROGRESS.md`. **Read `docs/PROGRESS.md` first every session.**
 
-Repo: https://github.com/Aweswomedude1234/GTChennai (private). **Status: moving to a MacBook Air M5 (24 GB), and from the browser stack to a native engine (recommendation: Godot 4; see PROGRESS.md). The 20-second web load target is dropped.** The three.js code below is the prototype and reference for the port.
+Repo: https://github.com/Aweswomedude1234/GTChennai. Dev machine: MacBook Air M5, 24 GB. The browser-only requirement and the 20 s load target are dropped (2026-10-01). The old three.js prototype in `src/` is reference only and no longer runs (its data moved to `godot/packs/`).
 
 ## Stack
-TypeScript + Vite + pnpm · three.js r186 `three/webgpu` (WebGPURenderer, TSL node materials, auto WebGL2 fallback) · Rapier (`@dimforge/rapier3d-compat`) · Playwright harness.
+Godot 4.7.2 stable · GDScript · Forward+ renderer · Jolt physics · custom `.gdshader` materials with procedural, tileable textures · offline tools in Python (numpy) and Node.
 
 ## Commands
-- `pnpm dev`: dev server on http://localhost:5199 (`?mode=spike` runs the crowd spike).
-- `pnpm typecheck`
-- `node tools/osm/fetch.mjs` then `node tools/osm/build.mjs`: Overpass → `public/packs/<city>/regions/<id>/` (regions are in `data/regions.json`).
-- `node tools/harness/shots.mjs <set> --channel=chrome`: screenshots and stats to `docs/screens/<set>/` (sets are in `tools/harness/shots.json`). Use `--channel=chrome`: Playwright's bundled Chromium lacks dxil.dll, so it has no WebGPU. Add `--q=key=val` for URL overrides.
-- `node tools/refs/commons.mjs`, `tools/refs/sheet.mjs`: reference images (local only, gitignored).
+- `tools/godot.sh` — play (finds Godot via `$GODOT`, `/Applications/Godot.app`, or PATH). `tools/godot.sh --editor` opens the editor.
+- `tools/godot.sh --headless --import` — (re)import assets and refresh the class cache after adding scripts.
+- `tools/check.sh` — parse-check every GDScript file.
+- `tools/shots.sh <set> [--only=a,b] [--res=1600x900] [--quality=…]` — screenshot harness: renders the shots in `godot/harness/shots.json` to `docs/screens/<set>/` plus `report.json`. Shots can `snap` to the nearest road, or run tests (`"test": "scene"` spawns the player and parked vehicles; `"test": "drive"` autopilots a vehicle across streamed chunks and records streaming stats). On headless Linux it uses Xvfb + Mesa lavapipe (software Vulkan, ~1 fps — fine for stills).
+- `tools/godot.sh --resolution 800x450 res://scenes/studio.tscn -- --studio=human,auto,bike,car` — asset studio contact sheets in `docs/screens/studio/`.
+- `python3 tools/textures/gen.py [--only name]` — regenerate the procedural tileable textures in `godot/textures/`.
+- `python3 tools/fonts/fetch.py` — fetch OFL fonts (full TTFs) into `godot/fonts/`.
+- `node tools/osm/fetch.mjs` then `node tools/osm/build.mjs` — Overpass → `godot/packs/<city>/regions/<id>/`.
 
-## URL params (dev and harness)
-`backend=webgl` · `post=0` · `quality=low|medium|high|ultra` · `hour=17.5` · `cam=x,y,z,tx,ty,tz` · `spawn=x,z` · `mode=spike` · any `Settings` key.
+## Game args (after `--`)
+Any settings key (`--quality=low|medium|high|ultra`, `--camera=third|first|top`, `--city=…`) plus `--hour=17.5`, `--freeze`, `--wet=1`, `--spawn=x,z`, `--shot=<set>`, `--only=a,b`.
 
-## Layout
-- `src/engine/`: renderer, input, settings, stats, rng
-- `src/world/`: sky/time, region loader, chunk streamer and worker, roads, buildings, props, signs, textures
-- `src/crowd/`: procedural humans (`humanMesh.ts`), dress and skin appearance, GPU crowd renderer
-- `src/physics/`, `src/player/`, `src/vehicles/`, `src/game/`, `src/ui/`, `src/audio/`
-- `public/packs/<city>/`: city data packs (pack.json, style.json, regions, names, dialogue)
-- `data/`: source data (regions.json, OSM raw (gitignored), characters, missions, refs)
-- `tools/`: offline pipelines (osm, harness, refs, blender, tts, audio)
-- `docs/`: PLAN, PROGRESS, DECISIONS, BLOCKERS, PLACEHOLDERS, CREDITS, STYLE_BIBLE, missions/, screens/
+## Controls
+WASD move / drive · Shift sprint · Alt walk · Space jump / handbrake · F enter/exit vehicle · C cycle camera (third/first/top) · H horn · V look back · [ ] time −/+ 1 h · F3 debug overlay · Esc release mouse. Gamepad mapped (sticks, triggers for throttle/brake).
+
+## Layout (`godot/`)
+- `scripts/core/` — `settings.gd` (autoload `Settings`, input map, cmdline args), `rng.gd` (mulberry32, bit-compatible with the prototype)
+- `scripts/world/` — `city_pack.gd` (pack + region data, road queries), `region_builder.gd` (ground, roads, footpaths, tanks, beach, sea), `building_gen.gd` (procedural buildings, threaded), `sign_painter.gd` (Tamil+English sign atlases via SubViewport), `streamer.gd` (near/far chunk rings, WorkerThreadPool), `street_detail.gd` (street furniture), `sky_clock.gd` (day/night, fog, globals), `mats.gd`, `mb.gd` (mesh builder), `world.gd`
+- `scripts/player/`, `scripts/camera/` (`camera_rig.gd`: third/first/top), `scripts/vehicles/` (`vehicle.gd` raycast physics, `vehicle_defs.gd`, `autopilot.gd`, `vehicle_spawner.gd`), `scripts/people/` (`appearance.gd`, `proc_human.gd`), `scripts/ui/hud.gd`, `scripts/harness/harness.gd`, `scripts/tools/studio.gd`
+- `shaders/` — `facade` (cells with parallax interiors), `generic` (props, typed by CUSTOM0.x), `road`, `ground`, `sign`, `sea`, `water`, `sky`, `common.gdshaderinc`
+- `packs/<city>/` — city data packs (pack.json, style.json, names.json, regions); `textures/`, `fonts/`, `harness/shots.json`
+- Repo root: `tools/` (offline pipelines), `data/`, `docs/` (PLAN, PROGRESS, DECISIONS, BLOCKERS, PLACEHOLDERS, CREDITS, STYLE_BIBLE, screens/)
 
 ## Conventions
-- World units are metres. x = east, z = south, y = up. The region origin is in `data/regions.json`. Person and vehicle `heading` h faces (sin h, cos h) in xz.
-- Three applies `positionNode` **after** instancing: animate with `positionGeometry` and add a rotated delta (see crowdRenderer.ts).
-- WebGPU allows at most **8 vertex buffers**, so pack per-instance data into one `InstancedInterleavedBuffer`.
-- Everything is deterministic from seeds (OSM way id → building seed).
-- No real brands, parties or politicians. The fictional parties are TMEK (Aadhavan) and ATM (Nagaraj); see STYLE_BIBLE §10.
-- Dev machine: MacBook Air M5, 24 GB (from 2026-10). The old ThinkPad (UHD 620) numbers in the docs are integrated-GPU numbers.
-- Commit as Aweswomedude1234, with the Co-Authored-By Claude trailer.
+- World units are metres. x = east, z = south, y = up (same as the data). Godot nodes face −Z: a heading `h` from the data (faces (sin h, cos h)) maps to `rotation.y = atan2(-dx, -dz)` of that direction.
+- Footprints from OSM: outward edge normal = (dz, −dx). Godot front faces are clockwise; `MB.quad()` takes the intended normal and fixes winding itself.
+- Vertex layout: COLOR = linear albedo, UV, CUSTOM0/CUSTOM1 = per-material data (see shader headers). Global shader uniforms: `night`, `hour`, `wet`, `power`, `wind` (project.godot `[shader_globals]`).
+- GDScript: give explicit types when the value comes from a Dictionary/Array (`var x: float = d.w`) — `:=` inference fails on Variants.
+- Everything is deterministic from seeds (OSM way id → building seed). No real brands, parties or politicians (fictional parties TMEK and ATM, STYLE_BIBLE §10). No paid/external AI asset services.
+- Commit as Aweswomedude1234 with the Co-Authored-By Claude trailer.

@@ -1,0 +1,130 @@
+{
+ "phase1": [
+  {
+   "name": "overview",
+   "cam": [
+    320,
+    260,
+    420,
+    0,
+    0,
+    -80
+   ],
+   "hour": 16
+  },
+  {
+   "name": "mada_street",
+   "cam": [
+    160,
+    1.7,
+    36,
+    160,
+    3,
+    -60
+   ],
+   "hour": 10,
+   "snap": true,
+   "side": 0.6
+  },
+  {
+   "name": "kutchery_road",
+   "cam": [
+    215,
+    1.7,
+    -124,
+    300,
+    3,
+    -100
+   ],
+   "hour": 11,
+   "snap": true,
+   "side": 0.5
+  },
+  {
+   "name": "temple_tank",
+   "cam": [
+    -40,
+    12,
+    110,
+    -118,
+    -1,
+    -2
+   ],
+   "hour": 17.4
+  },
+  {
+   "name": "marina",
+   "cam": [
+    980,
+    25,
+    -560,
+    1200,
+    0,
+    -720
+   ],
+   "hour": 17.8
+  },
+  {
+   "name": "bazaar_night",
+   "cam": [
+    215,
+    1.7,
+    -124,
+    300,
+    3,
+    -100
+   ],
+   "hour": 20.5,
+   "snap": true,
+   "side": -0.5
+  },
+  {
+   "name": "player_scene",
+   "cam": [
+    160,
+    1.7,
+    36,
+    160,
+    3,
+    -60
+   ],
+   "hour": 9.5,
+   "test": "scene",
+   "pitch": -0.15,
+   "yaw_off": 0.5
+  },
+  {
+   "name": "drive_auto",
+   "cam": [
+    215,
+    1.7,
+    -124,
+    300,
+    3,
+    -100
+   ],
+   "hour": 15.5,
+   "test": "drive",
+   "vehicle": "auto",
+   "seconds": 90,
+   "speed": 10
+  }
+ ],
+ "dev": [
+  {
+   "name": "player_scene",
+   "cam": [
+    160,
+    1.7,
+    36,
+    160,
+    3,
+    -60
+   ],
+   "hour": 9.5,
+   "test": "scene",
+   "pitch": -0.15,
+   "yaw_off": 0.5
+  }
+ ]
+}

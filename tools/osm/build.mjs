@@ -1,5 +1,5 @@
 // Convert raw Overpass JSON into the GTIndian region format consumed by the engine.
-// Output: public/packs/<city>/regions/<id>/{meta.json, chunks/<cx>_<cz>.json}
+// Output: godot/packs/<city>/regions/<id>/{meta.json, chunks/<cx>_<cz>.json}
 // Coordinates: local metres, x = east, z = south (three.js: north is -z), y = up.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -293,7 +293,7 @@ for (const region of regions) {
   }
 
   // ---------- Write ----------
-  const outDir = `public/packs/${region.city}/regions/${region.id}`;
+  const outDir = `godot/packs/${region.city}/regions/${region.id}`;
   fs.rmSync(outDir, { recursive: true, force: true });
   fs.mkdirSync(path.join(outDir, 'chunks'), { recursive: true });
   const chunkList = [];
