@@ -239,7 +239,7 @@ func _render() -> void:
 		var b := Basis(Vector3.UP, float(a.h) + PI)   # VAT bodies face +Z like the glTF
 		var buf: PackedFloat32Array = per[a.si]
 		buf.append_array([b.x.x, b.y.x, b.z.x, a.p.x, b.x.y, b.y.y, b.z.y, a.p.y, b.x.z, b.y.z, b.z.z, a.p.z])
-		var top: Color = a.top
+		var top: Color = (a.top as Color).srgb_to_linear()
 		buf.append_array([top.r, top.g, top.b, a.skin / 8.0])
 		var low: Color = a.lower
 		var packed := float(int(low.r8) * 65536 + int(low.g8) * 256 + int(low.b8))

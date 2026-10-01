@@ -104,7 +104,7 @@ func _shade(r: Rng) -> void:
 		match String(mi.name):
 			"body":
 				m.shader = _shader("skin")
-				m.set_shader_parameter("tone", app.skin.srgb_to_linear())
+				m.set_shader_parameter("tone", app.skin)  # source_color uniform: Godot linearises
 				m.set_shader_parameter("age", float(spec.macro.age))
 				m.set_shader_parameter("male", 1.0 if spec.sex == "m" else 0.0)
 				m.set_shader_parameter("sweat", r.range_f(0.2, 0.7))
@@ -112,7 +112,7 @@ func _shade(r: Rng) -> void:
 				m.set_shader_parameter("noise", noise)
 			"hair", "hair_extra", "brows", "moustache":
 				m.shader = _shader("hair")
-				m.set_shader_parameter("color", app.hair.srgb_to_linear())
+				m.set_shader_parameter("color", app.hair)
 				m.set_shader_parameter("oil", r.range_f(0.3, 0.9))
 				m.set_shader_parameter("noise", noise)
 			"eyes":
@@ -126,8 +126,8 @@ func _shade(r: Rng) -> void:
 					"lower": col = app.lower; pat = app.pattern
 					"drape": col = app.drape; pat = 4 if spec.dress == "saree" else 0; col2 = app.border
 					"extra": col = Color(0.9, 0.88, 0.8) if r.next() < 0.6 else Color(r.pick(["#c62828", "#1565c0", "#f9a825"])); pat = 1; col2 = col.darkened(0.3)
-				m.set_shader_parameter("color", col.srgb_to_linear())
-				m.set_shader_parameter("color2", col2.srgb_to_linear())
+				m.set_shader_parameter("color", col)
+				m.set_shader_parameter("color2", col2)
 				m.set_shader_parameter("pattern", pat)
 				m.set_shader_parameter("sheen", 0.5 if spec.dress == "saree" and mi.name in ["lower", "drape"] else 0.0)
 			"teeth":

@@ -6,8 +6,8 @@ varying vec3 lp; varying vec3 ln;
 void vertex() { lp = VERTEX; ln = NORMAL; }
 void fragment() {
 	float front = clamp(ln.z, 0.0, 1.0);
-	vec3 c = mix(vec3(0.82, 0.8, 0.76), iris, smoothstep(0.86, 0.9, front));
-	c = mix(c, vec3(0.01), smoothstep(0.965, 0.975, front));
+	vec3 c = mix(vec3(0.62, 0.58, 0.54), iris, smoothstep(0.76, 0.8, front));
+	c = mix(c, vec3(0.01), smoothstep(0.95, 0.965, front));
 	ALBEDO = c;
 	ROUGHNESS = 0.05;
 	SPECULAR = 0.8;

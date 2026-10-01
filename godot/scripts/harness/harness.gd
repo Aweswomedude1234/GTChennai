@@ -63,8 +63,13 @@ func _run(shots: Array) -> void:
 			await get_tree().process_frame
 			frames += 1
 			if frames > 10 and w.streamer.is_idle(): break
+		# populate the crowd around the camera before the shot (fast-forward the sim a few seconds)
+		if w.crowd:
+			w.crowd.focus = cam.position
+			for k in 40: w.crowd.update(0.25, w.clock.hour)
 		for i in int(s.get("settle", 12)): await get_tree().process_frame
 		var stats := _frame_stats()
+		stats["npcs"] = w.crowd.stats.agents if w.crowd else 0
 		await RenderingServer.frame_post_draw
 		var img := get_viewport().get_texture().get_image()
 		var path := out_dir.path_join(s.name + ".png")

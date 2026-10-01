@@ -28,8 +28,8 @@ void fragment() {
 	} else if (pattern == 3) {
 		c = mix(color, color2, step(0.7, fract(u.x * 0.8)) * 0.8);
 	} else if (pattern == 4) {
-		vec2 cell = fract(u * 0.7) - 0.5;
-		c = mix(color, color2, smoothstep(0.16, 0.1, length(cell)) * 0.9);
+		vec2 cell = fract(u * 1.6 + vec2(0.5 * step(0.5, fract(u.y * 0.8)), 0.0)) - 0.5;
+		c = mix(color, color2, smoothstep(0.14, 0.09, length(cell)) * 0.9);
 	}
 	vec4 w = texture(weave, u * 1.5);
 	c *= 0.86 + w.a * 0.22;

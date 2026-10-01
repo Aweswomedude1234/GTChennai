@@ -247,13 +247,15 @@ def build(spec):
     tights = verts_in_group(body, "helper-tights", 0.5)
     skirt = verts_in_group(body, "helper-skirt", 0.5)
     if dress in ("shirt_pants", "tshirt_pants", "churidar", "uniform_shorts"):
-        keep = tights
+        # trousers only up to the waistband, tucked just under the shirt hem (no poke-through)
+        waist = hips_z + 0.06 * (height / 1.75)
+        keep = {i for i in tights if body.data.vertices[i].co.z < waist}
         if dress == "uniform_shorts":
             knee_z = rig.data.bones["LeftLeg"].head_local.z if "LeftLeg" in rig.data.bones else height * 0.28
-            keep = {i for i in tights if body.data.vertices[i].co.z > knee_z + 0.05}
+            keep = {i for i in keep if body.data.vertices[i].co.z > knee_z + 0.05}
         garments.append(extract(body, keep, "lower", 0.004, M["lower"]))
     if dress in ("shirt_veshti", "shirt_lungi", "saree", "uniform_skirt"):
-        sk = extract(body, skirt, "lower", 0.012, M["lower"])
+        sk = extract(body, {i for i in skirt if body.data.vertices[i].co.z < hips_z + 0.09 * (height / 1.75)}, "lower", 0.012, M["lower"])
         # extend the skirt helper down to the ankle (veshti/lungi/saree are ankle length; skirt to the knee)
         zmin = min(v.co.z for v in sk.data.vertices); zmax = max(v.co.z for v in sk.data.vertices)
         target = 0.07 if dress != "uniform_skirt" else zmin
@@ -266,7 +268,22 @@ def build(spec):
         garments.append(sk)
         if dress == "saree":
             # pleats bunch at the front + pallu draped from the left hip over the left shoulder down the back
-            pallu = make_pallu(rig, height, M["drape"])
+            ls = rig.data.bones["LeftArm"].head_local; rh = rig.data.bones["RightUpLeg"].head_local
+            p0 = Vector((ls.x * 0.85, ls.z + 0.02)); p1 = Vector((rh.x * 1.25, hips_z + 0.1 * (height / 1.75)))
+            dvec = (p1 - p0).normalized()
+            cy = sum(body.data.vertices[i].co.y for i in body_vs if dom.get(i) in ("Spine", "Spine1")) / max(1, sum(1 for i in body_vs if dom.get(i) in ("Spine", "Spine1")))
+            band = set()
+            for i in body_vs:
+                co = body.data.vertices[i].co
+                if dom.get(i) in ("Head", "Neck1", "LeftHand", "RightHand", "LeftForeArm", "RightForeArm", "LeftLeg", "RightLeg", "LeftFoot", "RightFoot"): continue
+                if co.z < hips_z - 0.05 or co.z > ls.z + 0.08: continue
+                q = Vector((co.x, co.z)) - p0
+                along = q.dot(dvec); perp = abs(q.x * dvec.y - q.y * dvec.x)
+                front = co.y < cy
+                if front and -0.06 < along < (p1 - p0).length + 0.05 and perp < 0.12: band.add(i)
+                elif not front and co.x > 0.02 and co.z > hips_z + 0.02: band.add(i)   # falls down the back on the left
+                elif dom.get(i) == "LeftArm" and co.z > ls.z - 0.12: band.add(i)       # over the shoulder
+            pallu = extract(body, band, "drape", 0.016, M["drape"])
             garments.append(pallu)
     if dress == "churidar" and r.random() < 0.8:
         garments.append(make_dupatta(rig, height, M["drape"]))
@@ -277,11 +294,20 @@ def build(spec):
     hz = head_b.head_local.z
     hlen = (head_b.tail_local - head_b.head_local).length
     head_vs = [i for i in body_vs if dom.get(i) in ("Head", "Neck1")]
-    hy = sum(body.data.vertices[i].co.y for i in head_vs) / max(1, len(head_vs))
-    brow_z = hz + hlen * 0.62
+    lids_m = uv_mask_verts(body, "mpfb_eyelids.jpg") & body_vs
+    lid_top = max(body.data.vertices[i].co.z for i in lids_m) if lids_m else hz + hlen * 0.5
+    face_y = min(body.data.vertices[i].co.y for i in head_vs)
+    back_y = max(body.data.vertices[i].co.y for i in head_vs)
+    depth = max(0.05, back_y - face_y)
+    fem = spec["sex"] == "f"
+    front_line = lid_top + (0.052 if not fem else 0.048)
+    nape = lid_top - (0.075 if not fem else 0.09)
     def is_scalp(co):
-        back = co.y > hy + 0.015                      # MPFB faces -Y: larger y = back of the head
-        return (co.z > brow_z + 0.035) or (back and co.z > hz + hlen * 0.15) or (co.y > hy - 0.02 and co.z > brow_z - 0.01 and abs(co.x) > 0.055)
+        f = (co.y - face_y) / depth                       # 0 face … 1 back of head
+        thr = front_line + (nape - front_line) * max(0.0, (f - 0.25) / 0.75) ** 1.3
+        if abs(co.x) > 0.062 and f < 0.72:                # sideburn line: keep ears and temples clear
+            thr = max(thr, lid_top + 0.012 + (0.02 if f < 0.4 else 0.0))
+        return co.z > thr
     hair_vs = {i for i in head_vs if is_scalp(body.data.vertices[i].co)}
     if hair_vs and spec.get("hair") != "bald":
         hair = extract(body, hair_vs, "hair", 0.005, M["hair"])
