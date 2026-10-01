@@ -11,11 +11,13 @@ Legend: [x] done · [~] partial · [ ] todo
 - [x] Reference research (Commons) and STYLE_BIBLE with numeric rules
 - [x] Spike: WebGPU + Rapier + 10k instanced animated people (25–30 fps on UHD 620 with full post)
 
+## Engine switch (2026-10): port to Godot 4 on Mac (see PROGRESS.md "Porting plan"). Phase 1+ items now refer to the Godot build; [~] marks the three.js prototype.
+
 ## Phase 1: Core engine
-- [ ] City pack format (pack.json, style.json) and region loader
-- [ ] Chunk streamer with a Web Worker building-mesh generator and LOD rings
-- [ ] Ground, roads (OSM widths, junction patches, kerbs, markings), water, sea and beach
-- [ ] Physics world: static building colliders per chunk, ground
+- [~] City pack format (pack.json, style.json, names.json) and region loader
+- [~] Chunk streamer with a Web Worker building-mesh generator and LOD rings
+- [~] Ground, roads (OSM widths, junction patches, kerbs, markings), water, sea and beach
+- [~] Physics world: static building colliders per chunk, ground
 - [ ] Player on foot (Rapier kinematic controller): walk, run, jump
 - [ ] Cameras: third-person, first-person, top-down; settings switch
 - [ ] Day/night integrated (time controls)

@@ -226,23 +226,23 @@ for (const region of regions) {
     const r = rng(seed);
 
     // Frontage per edge: outward normal (for CCW with A>0 in x,z-with-z-down) is (dz, -dx)/len
-    const edges = [];
+    const edges = [], edgeRoad = [];
     let bestRank = -1;
     for (let i = 0; i < pts.length; i++) {
       const [x1, z1] = pts[i], [x2, z2] = pts[(i + 1) % pts.length];
       const dx = x2 - x1, dz = z2 - z1, L = Math.hypot(dx, dz);
-      if (L < 2.5) { edges.push(0); continue; }
+      if (L < 2.5) { edges.push(0); edgeRoad.push(-1); continue; }
       const nx = dz / L, nz = -dx / L;
       const mx = (x1 + x2) / 2 + nx, mz = (z1 + z2) / 2 + nz;
       const nr = nearestRoad(mx, mz);
-      let f = 0;
+      let f = 0, fr = -1;
       if (nr) {
         const rd = roads[nr.ri];
         const toX = nr.px - mx, toZ = nr.pz - mz, tl = Math.hypot(toX, toZ) || 1;
         const facing = (toX * nx + toZ * nz) / tl;
-        if (nr.d < rd.w / 2 + 14 && facing > 0.55) { f = rd.rank + 1; bestRank = Math.max(bestRank, rd.rank); }
+        if (nr.d < rd.w / 2 + 14 && facing > 0.55) { f = rd.rank + 1; fr = nr.ri; bestRank = Math.max(bestRank, rd.rank); }
       }
-      edges.push(f);
+      edges.push(f); edgeRoad.push(fr);
     }
     // District context
     let lu = null; for (const [poly, k] of landuseGrid) if ((k === 'commercial' || k === 'residential' || k === 'religious' || k === 'institution') && pip(poly, cx, cz)) { lu = k; if (k !== 'residential') break; }
@@ -284,7 +284,7 @@ for (const region of regions) {
     kindCount[kind] = (kindCount[kind] || 0) + 1;
     const ck = Math.floor((cx - minX) / CHUNK) + '_' + Math.floor((cz - minZ) / CHUNK);
     if (!chunks.has(ck)) chunks.set(ck, { b: [] });
-    const b = { f: pts.flat().map(r1), k: kind, l: levels, s: seed, e: edges };
+    const b = { f: pts.flat().map(r1), k: kind, l: levels, s: seed, e: edges, r: edgeRoad };
     if (t.height) b.h = parseFloat(t.height);
     if (lm?.name || t.name) b.n = lm?.name || t.name;
     if (t.building === 'lighthouse') b.h = parseFloat(t.height) || 45.7;

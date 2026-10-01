@@ -2,6 +2,8 @@
 
 An open-world crime game set in an authentic South India (Chennai first). It runs in the browser. The full brief is in `BRIEF.md`; the roadmap is in `docs/PLAN.md`; the session log and next steps are in `docs/PROGRESS.md`. **Read `docs/PROGRESS.md` first every session.**
 
+Repo: https://github.com/Aweswomedude1234/GTChennai (private). **Status: moving to a MacBook Air M5 (24 GB), and from the browser stack to a native engine (recommendation: Godot 4; see PROGRESS.md). The 20-second web load target is dropped.** The three.js code below is the prototype and reference for the port.
+
 ## Stack
 TypeScript + Vite + pnpm · three.js r186 `three/webgpu` (WebGPURenderer, TSL node materials, auto WebGL2 fallback) · Rapier (`@dimforge/rapier3d-compat`) · Playwright harness.
 
@@ -31,5 +33,5 @@ TypeScript + Vite + pnpm · three.js r186 `three/webgpu` (WebGPURenderer, TSL no
 - WebGPU allows at most **8 vertex buffers**, so pack per-instance data into one `InstancedInterleavedBuffer`.
 - Everything is deterministic from seeds (OSM way id → building seed).
 - No real brands, parties or politicians. The fictional parties are TMEK (Aadhavan) and ATM (Nagaraj); see STYLE_BIBLE §10.
-- Dev machine: an i5-8350U with **Intel UHD 620**, so performance numbers are integrated-GPU numbers.
+- Dev machine: MacBook Air M5, 24 GB (from 2026-10). The old ThinkPad (UHD 620) numbers in the docs are integrated-GPU numbers.
 - Commit as Aweswomedude1234, with the Co-Authored-By Claude trailer.

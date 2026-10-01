@@ -22,5 +22,32 @@
    "q": "mode=spike&n=300&hour=12&post=0&still=1",
    "settle": 3000
   }
+ ],
+ "phase1": [
+  {
+   "name": "overview",
+   "q": "cam=320,260,420,0,0,-80&hour=16&freeze=1",
+   "settle": 4000
+  },
+  {
+   "name": "mada_street",
+   "q": "cam=175,1.8,40,160,4,-60&hour=10&freeze=1",
+   "settle": 4000
+  },
+  {
+   "name": "temple_tank",
+   "q": "cam=-40,12,110,-118,-1,-2&hour=17.4&freeze=1",
+   "settle": 4000
+  },
+  {
+   "name": "marina",
+   "q": "cam=980,25,-560,1200,0,-720&hour=17.8&freeze=1",
+   "settle": 4000
+  },
+  {
+   "name": "bazaar_night",
+   "q": "cam=440,2,-40,436,3,-120&hour=20.5&freeze=1",
+   "settle": 4000
+  }
  ]
 }

@@ -1,0 +1,20 @@
+[
+ {
+  "name": "mada_street",
+  "url": "http://localhost:5199/?cam=175,1.8,40,160,4,-60&hour=10&freeze=1&ssao=0&fdbg=m3",
+  "loadMs": 19727,
+  "stats": {
+   "fps": 13.608087091796806,
+   "frameMs": 73.48571428550142,
+   "worstMs": 79.59999999962747,
+   "draws": 121,
+   "tris": 478812,
+   "time": "10:00",
+   "chunks": "12 near 90 far (11 pending, 128 ms)",
+   "colliders": 12,
+   "pos": "160, -60"
+  },
+  "errors": [],
+  "warnings": 1
+ }
+]
