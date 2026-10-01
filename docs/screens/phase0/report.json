@@ -1,0 +1,40 @@
+[
+ {
+  "name": "spike_10k_street",
+  "url": "http://localhost:5199/?mode=spike&n=10000&hour=16.5",
+  "loadMs": 3057,
+  "stats": {
+   "fps": 24.495948746972395,
+   "frameMs": 40.82307692301961,
+   "worstMs": 51.5,
+   "draws": 163,
+   "tris": 748885,
+   "npcs": 10000,
+   "near": 106,
+   "mid": 731,
+   "far": 2133,
+   "culled": 7030
+  },
+  "errors": [],
+  "warnings": 1
+ },
+ {
+  "name": "spike_10k_dusk",
+  "url": "http://localhost:5199/?mode=spike&n=10000&hour=18.2",
+  "loadMs": 2399,
+  "stats": {
+   "fps": 25.29675034051484,
+   "frameMs": 39.53076923079789,
+   "worstMs": 44.40000000037253,
+   "draws": 163,
+   "tris": 755133,
+   "npcs": 10000,
+   "near": 108,
+   "mid": 735,
+   "far": 2131,
+   "culled": 7026
+  },
+  "errors": [],
+  "warnings": 1
+ }
+]

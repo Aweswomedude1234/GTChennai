@@ -1,0 +1,8 @@
+node_modules/
+dist/
+data/osm/*.raw.json
+data/dem/*.png
+data/refs/images/
+tools/**/__pycache__/
+*.log
+test-results/

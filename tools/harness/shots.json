@@ -1,0 +1,26 @@
+{
+ "phase0": [
+  {
+   "name": "spike_10k_street",
+   "q": "mode=spike&n=10000&hour=16.5",
+   "settle": 6000
+  },
+  {
+   "name": "spike_10k_dusk",
+   "q": "mode=spike&n=10000&hour=18.2",
+   "settle": 5000
+  }
+ ],
+ "debug": [
+  {
+   "name": "crowd_small",
+   "q": "mode=spike&n=300&hour=12&post=0",
+   "settle": 3000
+  },
+  {
+   "name": "crowd_small_nogait",
+   "q": "mode=spike&n=300&hour=12&post=0&still=1",
+   "settle": 3000
+  }
+ ]
+}

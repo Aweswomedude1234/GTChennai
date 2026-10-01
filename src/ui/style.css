@@ -1,0 +1,12 @@
+:root { --accent: #f2b705; --ink: #f5efe2; --bg: #14110e; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: #000; color: var(--ink); font-family: 'Noto Sans Tamil', 'Noto Sans', system-ui, sans-serif; }
+#game { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; outline: none; }
+#ui { position: fixed; inset: 0; pointer-events: none; z-index: 10; }
+#loading { position: fixed; inset: 0; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+  background: radial-gradient(ellipse at 50% 60%, #3a2414 0%, #120c08 70%); transition: opacity .6s; }
+#loading.done { opacity: 0; pointer-events: none; }
+#loading .brand { font: 900 64px/1 'Noto Sans', system-ui; letter-spacing: 2px; color: var(--accent); text-shadow: 0 4px 0 #7a3d00, 0 0 40px rgba(242,183,5,.35); font-style: italic; }
+#loading .sub { font-size: 20px; opacity: .85; }
+#loading .bar { width: 320px; height: 6px; background: rgba(255,255,255,.12); border-radius: 3px; overflow: hidden; }
+#loading .bar i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .2s; }
+#loading .msg { font-size: 13px; opacity: .7; }

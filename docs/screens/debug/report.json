@@ -1,0 +1,21 @@
+[
+ {
+  "name": "crowd_small",
+  "url": "http://localhost:5199/?mode=spike&n=300&hour=12&post=0",
+  "loadMs": 11625,
+  "stats": {
+   "fps": 48.534265191260104,
+   "frameMs": 20.6039999999851,
+   "worstMs": 37.09999999962747,
+   "draws": 143,
+   "tris": 326453,
+   "npcs": 300,
+   "near": 124,
+   "mid": 56,
+   "far": 0,
+   "culled": 120
+  },
+  "errors": [],
+  "warnings": 3
+ }
+]
