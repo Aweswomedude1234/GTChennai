@@ -29,7 +29,7 @@ void fragment() {
 	vec4 nz2 = texture(noise, wp.xz / 23.0);
 	// age: new black asphalt → grey dusty; varies along the road too
 	float age = clamp(wear * 0.8 + (nz.r - 0.5) * 0.5, 0.0, 1.0);
-	vec3 col = asph * mix(vec3(0.85), vec3(1.6, 1.55, 1.45), age);
+	vec3 col = asph * mix(vec3(0.62), vec3(1.15, 1.12, 1.06), age);
 	float rough = mix(0.78, 0.92, age) * an.b * 1.05;
 	// patch repairs: darker rectangles 8–15% of the area
 	vec2 pc = floor(vec2(along / 6.0, (across + 1.0) * 1.5) + rnd * 13.0);

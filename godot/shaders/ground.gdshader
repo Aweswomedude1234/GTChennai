@@ -46,17 +46,18 @@ void fragment() {
 		col *= mix(1.0, 0.62, wetsand) * (0.92 + nz.g * 0.16);
 		rough = mix(0.95, 0.45, wetsand);
 	} else if (k == 4) {
-		col = texture(granite_c, p / 3.6).rgb * 1.05; nm = texture(granite_n, p / 3.6); rough = nm.b;
+		col = texture(granite_c, p / 3.6).rgb * 0.8; nm = texture(granite_n, p / 3.6); rough = nm.b;
 	} else if (k == 7 || k == 9) {
-		col = texture(concrete_c, p / 3.0).rgb * 0.9; nm = texture(concrete_n, p / 3.0); rough = 0.9;
+		col = texture(concrete_c, p / 3.0).rgb * 0.42; nm = texture(concrete_n, p / 3.0); rough = 0.9;
 		col = mix(col, texture(earth_c, p / 4.0).rgb, smoothstep(0.55, 0.8, nz.g) * 0.6);
 	} else if (k == 2) {
 		col = texture(earth_c, p / 4.0).rgb * vec3(1.15, 0.95, 0.8); nm = texture(earth_n, p / 4.0); rough = 0.97;
 	} else {
 		// urban ground: compacted earth with cement patches, dust and scattered litter
 		col = texture(earth_c, p / 4.0).rgb; nm = texture(earth_n, p / 4.0); rough = 0.96;
-		float cem = smoothstep(0.6, 0.68, nz.g * 0.7 + nz2.r * 0.3) * 0.8;
-		col = mix(col, texture(concrete_c, p / 3.0).rgb * 0.95, cem);
+		float cem = smoothstep(0.62, 0.7, nz.g * 0.7 + nz2.r * 0.3) * 0.75;
+		vec3 cemc = texture(concrete_c, p / 3.0).rgb * 0.42 * mix(vec3(1.0), texture(earth_c, p / 4.0).rgb * 2.2, 0.35);
+		col = mix(col, cemc, cem);
 		float weed = smoothstep(0.62, 0.8, nz.r) * (1.0 - cem);
 		col = mix(col, texture(grass_c, p / 4.0).rgb * 0.8, weed * 0.6);
 		vec2 lc = floor(p * 1.6);

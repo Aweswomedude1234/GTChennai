@@ -100,8 +100,10 @@ void fragment() {
 
 	// ---------------- wall with weathering
 	float grime = nz.r;
-	float streak_n = texture(noise, vec2(along * 0.9, wp.y * 0.06) + bseed).g;
-	float streak = smoothstep(0.55, 0.8, streak_n) * weather * 0.45;
+	float streak_n = texture(noise, vec2(along * 0.7, wp.y * 0.05) + bseed).g;
+	// rain streaks hang from each floor slab / chajja line and fade downward
+	float from_top = clamp((chh - ly) / max(chh, 0.1), 0.0, 1.0);
+	float streak = smoothstep(0.66, 0.86, streak_n) * weather * 0.35 * (1.0 - smoothstep(0.0, 0.85, from_top));
 	// black rain streaks from both ends of each chajja/window head (STYLE_BIBLE §2)
 	float under = 0.0;
 	if (k == 1 || k == 2) {

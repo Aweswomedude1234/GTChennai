@@ -24,6 +24,9 @@ class Ctx:
 	var shops: Array = []          # {x, z, nx, nz, w, trade, seed, sign, y}
 	var lights := PackedFloat32Array()   # x, y, z, type (0 tube, 1 warm window)
 	var colliders: Array = []      # {f: PackedVector2Array, h}
+	var fronts: Array = []         # street-facing edges {a, b, n (Vector2 outward), kind, road, seed, h, commercial}
+	var doors: Array = []          # {p: Vector2, n: Vector2}
+	var street = null              # StreetDetail.Out
 	var detail := true
 	var trade_w: Array = []
 	var style: Dictionary
@@ -47,10 +50,13 @@ static func gen(b: Dictionary, ctx: Ctx) -> void:
 	var n := P.size()
 	if n < 3: return
 	var kind: String = b.k
-	var sacred := kind in ["temple", "church", "mosque"]
+	var sacred := kind in ["temple", "church", "mosque", "mandapam"]
 	var levels := maxi(1, int(b.l))
 	var commercial := kind == "commercial"
 	var gh := r.range_f(3.6, 4.2) if commercial else (3.6 if kind == "institution" else r.range_f(3.0, 3.3))
+	if kind == "mandapam":
+		gh = r.range_f(4.6, 5.6)
+		levels = 1
 	var fh := float(st.floorH) + (r.next() - 0.5) * 0.2
 	var H := gh + (levels - 1) * fh
 	if b.has("h") and float(b.h) > 0.0:
@@ -75,6 +81,8 @@ static func gen(b: Dictionary, ctx: Ctx) -> void:
 	var road_of: Array = b.get("r", [])
 	var drain_col := Rng.hex_lin(r.pick(["#8e8e88", "#6b6b66", "#a8a29a", "#2c2c2c", "#3a5f8a"]))
 	var trim_col := paint.lerp(Color(1, 1, 1), 0.25) if r.next() < 0.5 else accent
+	var band := r.next() < float(st.get("floorBandChance", 0.5)) and not sacred
+	var band_col := paint.lerp(Color(1, 1, 1), 0.3) if r.next() < 0.6 else trim_col
 
 	var cell_quad := func(a: Vector2, bb: Vector2, y0: float, y1: float, nrm: Vector3, ck: int, flr: int, c: Color, ws2: int) -> void:
 		var w := a.distance_to(bb)
@@ -95,6 +103,8 @@ static func gen(b: Dictionary, ctx: Ctx) -> void:
 		var front: bool = i < edges.size() and int(edges[i]) > 0
 		var at := func(s: float) -> Vector2: return p0 + t * s
 		var road_i: int = int(road_of[i]) if i < road_of.size() else -1
+		if front and L > 2.0:
+			ctx.fronts.append({"a": p0, "b": p1, "n": Vector2(nrm.x, nrm.z), "kind": kind, "road": road_i, "seed": r.seed_int(), "h": H, "gh": gh, "commercial": commercial, "levels": levels})
 
 		# ---------------- ground floor
 		if commercial and front and L > 2.4:
@@ -123,6 +133,7 @@ static func gen(b: Dictionary, ctx: Ctx) -> void:
 				if ctx.detail and k == Cell.DOOR:
 					# entrance step, and a kolam on the doorstep of homes (drawn by morning)
 					var m := (a + bb) * 0.5
+					ctx.doors.append({"p": m, "n": Vector2(nrm.x, nrm.z), "kind": kind})
 					gbox.call(Vector3(m.x + nrm.x * 0.35, 0.09, m.y + nrm.z * 0.35), Vector3(0.75, 0.09, 0.35), rot, Color(0.5, 0.49, 0.46), GM.CONCRETE)
 		# ---------------- upper floors
 		var nb2 := maxi(1, roundi(L / r.range_f(st.bayW[0], st.bayW[1])))
@@ -153,6 +164,12 @@ static func gen(b: Dictionary, ctx: Ctx) -> void:
 						G.tube(ac + Vector3(0, -0.27, 0), ac + Vector3(0, -0.6 - r.next(), 0), 0.012, 3, Color(0.1, 0.1, 0.1), Vector4(GM.RUBBER, 0.6, 0, 0))
 				if k == Cell.WINDOW and wsi_has_sill(ws):
 					gbox.call(Vector3(m.x + nrm.x * 0.08, y0 + 0.85, m.y + nrm.z * 0.08), Vector3(minf(0.75, bw2 * 0.3), 0.04, 0.1), rot, paint.lerp(Color(0.5, 0.5, 0.5), 0.15), GM.CONCRETE)
+		# ---------------- floor bands: projecting slab edge at each floor (common on RCC frames)
+		if ctx.detail and band and levels > 1 and L > 2.5:
+			var mid := (p0 + p1) * 0.5
+			for f in range(1, levels):
+				var by := gh + (f - 1) * fh
+				fbox.call(Vector3(mid.x + nrm.x * 0.05, by, mid.y + nrm.z * 0.05), Vector3(L * 0.5 + 0.05, 0.075, 0.06), rot, band_col, Cell.TRIM)
 		# ---------------- parapet (flat roofs)
 		if not tile_roof and not sacred:
 			var ph := r.range_f(0.9, 1.1); var th := 0.14

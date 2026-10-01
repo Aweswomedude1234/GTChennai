@@ -24,10 +24,16 @@ var street: StreetDetail
 
 func setup(p: CityPack, sp: SignPainter) -> void:
 	pack = p
+	# warm shared resources on the main thread before workers touch them
+	Mats.facade(); Mats.generic(); Props.foliage_mat(); StreetDetail.poster_mat(); StreetDetail.kolam_mat()
+	for m in ["tree_rain", "tree_neem", "tree_gulmohar", "tree_young", "palm", "palm_short", "shrub", "pole", "pole_lamp", "lamp_post", "transformer", "bike_parked", "scooter_parked", "crate", "stool", "cylinder", "drum", "sack", "bin", "stand"]:
+		Props.get_mesh(m)
 	painter = sp
 	street = StreetDetail.new(p)
 	near_r = Settings.q("near_r")
 	far_r = Settings.q("far_r")
+	if Settings.has_arg("near"): near_r = Settings.arg_f("near")
+	if Settings.has_arg("far"): far_r = Settings.arg_f("far")
 	max_jobs = maxi(1, OS.get_processor_count() - 2)
 	for t in pack.names.trades: _trade_w.append(t.w)
 	for key in pack.region.chunks:
@@ -88,7 +94,10 @@ func _job(key: String, detail: bool) -> void:
 	if detail:
 		for c in ctx.colliders: col.append_array(_shell_tris(c.f, c.h))
 		street.build_chunk(key, chunks[key].center, ctx)
-	var out := {"key": key, "detail": detail, "ctx": ctx, "col": col, "ms": (Time.get_ticks_usec() - t0) / 1000.0}
+	var out := {"key": key, "detail": detail, "ctx": ctx, "col": col}
+	out["node"] = _build_node(out)
+	out["ms"] = (Time.get_ticks_usec() - t0) / 1000.0
+	if Settings.has_arg("prof"): print("[chunk] %s %s %d bldg %.0f ms" % [key, "near" if detail else "far", bs.size(), out.ms])
 	_mutex.lock()
 	_done.append(out)
 	_mutex.unlock()
@@ -104,14 +113,9 @@ static func _shell_tris(P: PackedVector2Array, h: float) -> PackedVector3Array:
 		out.append_array([Vector3(P[tris[i]].x, h, P[tris[i]].y), Vector3(P[tris[i + 1]].x, h, P[tris[i + 1]].y), Vector3(P[tris[i + 2]].x, h, P[tris[i + 2]].y)])
 	return out
 
-func _upload(res: Dictionary) -> void:
-	var t0 := Time.get_ticks_usec()
-	var c: Dictionary = chunks[res.key]
-	var want: String = c.pending
-	c.pending = ""
-	if want == "" or (want == "near") != res.detail:
-		return # superseded
-	_unload(c)
+## builds the chunk's node tree off the main thread (meshes, multimeshes, collision shapes);
+## the RenderingServer/PhysicsServer are thread-safe in Godot 4, nodes are not yet in the tree.
+func _build_node(res: Dictionary) -> Node3D:
 	var ctx: BuildingGen.Ctx = res.ctx
 	var node := Node3D.new()
 	node.name = "chunk_" + res.key
@@ -135,10 +139,31 @@ func _upload(res: Dictionary) -> void:
 			body.add_child(cs)
 			node.add_child(body)
 		street.attach_chunk(node, ctx)
+		if ctx.sign.count() > 0:
+			var smi := MeshInstance3D.new()
+			smi.name = "signs"
+			smi.mesh = ctx.sign.to_mesh()
+			smi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			smi.visible = false
+			node.add_child(smi)
+	return node
+
+func _upload(res: Dictionary) -> void:
+	var t0 := Time.get_ticks_usec()
+	var c: Dictionary = chunks[res.key]
+	var want: String = c.pending
+	c.pending = ""
+	var node: Node3D = res.node
+	if want == "" or (want == "near") != res.detail:
+		node.free()
+		return # superseded
+	_unload(c)
+	var ctx: BuildingGen.Ctx = res.ctx
+	add_child(node)
+	if res.detail:
 		if ctx.sign.count() > 0: _paint_signs(c, node, ctx)
 		c.shops = ctx.shops
 		c.lights = ctx.lights
-	add_child(node)
 	c.node = node
 	c.state = want
 	stats.built += 1
@@ -151,10 +176,10 @@ func _paint_signs(c: Dictionary, node: Node3D, ctx: BuildingGen.Ctx) -> void:
 	var tex := await painter.paint(ctx.signs)
 	if not is_instance_valid(node) or c.node != node: return
 	var rows := maxi(1, ceili(ctx.signs.size() / float(BuildingGen.SIGN_COLS)))
-	var mi := MeshInstance3D.new()
-	mi.mesh = ctx.sign.to_mesh(Mats.sign(tex, rows))
-	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	node.add_child(mi)
+	var mi: MeshInstance3D = node.get_node_or_null("signs")
+	if mi == null: return
+	mi.material_override = Mats.sign(tex, rows)
+	mi.visible = true
 
 func _unload(c: Dictionary) -> void:
 	if c.node:

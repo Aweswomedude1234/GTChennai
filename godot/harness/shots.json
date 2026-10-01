@@ -112,7 +112,19 @@
  ],
  "dev": [
   {
-   "name": "player_scene",
+   "name": "gopuram",
+   "cam": [
+    107,
+    1.7,
+    13.4,
+    63,
+    17,
+    2.5
+   ],
+   "hour": 9.5
+  },
+  {
+   "name": "street",
    "cam": [
     160,
     1.7,
@@ -121,10 +133,9 @@
     3,
     -60
    ],
-   "hour": 9.5,
-   "test": "scene",
-   "pitch": -0.15,
-   "yaw_off": 0.5
+   "hour": 10,
+   "snap": true,
+   "side": 0.6
   }
  ]
 }

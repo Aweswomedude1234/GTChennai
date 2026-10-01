@@ -17,6 +17,7 @@ var sun: DirectionalLight3D
 var env: Environment
 var sky_mat: ShaderMaterial
 var focus := Vector3.ZERO
+var _lights_on := true
 
 # h, sun colour, sun intensity, sky zenith, horizon, ambient energy, fog colour, fog density, exposure
 const KEYS := [
@@ -90,7 +91,7 @@ func _ready() -> void:
 	env.volumetric_fog_anisotropy = 0.6
 	env.volumetric_fog_ambient_inject = 0.3
 	env.adjustment_enabled = true
-	env.adjustment_saturation = 1.05
+	env.adjustment_saturation = 1.14
 	env.adjustment_contrast = 1.04
 	we.environment = env
 	add_child(we)
@@ -125,7 +126,7 @@ func _apply() -> void:
 	var light_dir := sun_dir
 	if below: light_dir = Vector3(-sun_dir.x, absf(sun_dir.y) + 0.45, -sun_dir.z).normalized()  # moon
 	sun.light_color = k[1]
-	sun.light_energy = k[2] * weather_dim * 0.95
+	sun.light_energy = k[2] * weather_dim * 0.72
 	sun.look_at_from_position(focus + light_dir * 100.0, focus, Vector3.UP if absf(light_dir.y) < 0.99 else Vector3.FORWARD)
 	night_factor = smoothstep(-0.08, 0.12, -sun_dir.y)
 	sky_mat.set_shader_parameter("zenith", k[3])
@@ -138,6 +139,10 @@ func _apply() -> void:
 	env.fog_density = k[7] * weather_fog
 	env.volumetric_fog_albedo = k[6]
 	env.tonemap_exposure = k[8]
+	var lights_on := street_lights_on() and power > 0.5
+	if lights_on != _lights_on or Engine.get_process_frames() % 30 == 0:
+		_lights_on = lights_on
+		for n in get_tree().get_nodes_in_group("street_lights"): n.visible = lights_on
 	RenderingServer.global_shader_parameter_set("night", night_factor)
 	RenderingServer.global_shader_parameter_set("hour", h)
 	RenderingServer.global_shader_parameter_set("wet", wet)

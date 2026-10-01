@@ -23,7 +23,11 @@ var junction_r := PackedFloat32Array()
 func _init(p: CityPack) -> void:
 	pack = p
 
+var landmarks: LandmarkGen
+
 func build() -> void:
+	landmarks = LandmarkGen.new()
+	landmarks.build(pack.region.get("structures", []), Rng.hex_lin(pack.style.get("kaavi", "#b5442c")))
 	_find_tanks()
 	_build_ground()
 	_build_roads()
@@ -36,12 +40,16 @@ static func poly_area(p: PackedVector2Array) -> float:
 		a += p[i].x * p[j].y - p[j].x * p[i].y
 	return a * 0.5
 
+var canals: Array[PackedVector2Array] = []
+
 func _find_tanks() -> void:
+	# temple tanks (stepped kulam) and canals/ponds (sloped banks) both cut the ground
 	for a in pack.region.areas:
-		if a.k != "water": continue
+		if not (a.k in ["tank", "canal", "water"]): continue
 		var pts := CityPack.pts2(a.pts)
-		if pts.size() >= 3 and absf(poly_area(pts)) < 120000.0:
-			tanks.append(pts)
+		if pts.size() < 3: continue
+		tanks.append(pts)
+		if a.k != "tank": canals.append(pts)
 
 func _in_tank(p: Vector2) -> bool:
 	for t in tanks:
@@ -129,7 +137,9 @@ func _build_ground() -> void:
 		var tint := 0.92 + Rng.hashf(pts.size() * 7 + int(pts[0].x)) * 0.16
 		ground.polygon(pts, tris, 0.012 + k * 0.002, true, Color(tint, tint, tint), Vector4(k, 0, 0, 0))
 
-	for t in tanks: _build_tank(t)
+	for t in tanks:
+		if t in canals: _build_canal(t)
+		else: _build_tank(t)
 
 	if coast:
 		var S := [-BEACH_IN, -40.0, -15.0, 0.0, 8.0, 20.0, 45.0]
@@ -200,6 +210,23 @@ func _build_tank(ring: PackedVector2Array) -> void:
 	var tris := Geometry2D.triangulate_polygon(ring)
 	if not tris.is_empty():
 		water.polygon(ring, tris, -steps * rise + 0.55, true, Color(1, 1, 1), Vector4.ZERO)
+
+## canal / pond: concrete embankment sloping down to murky water
+func _build_canal(ring: PackedVector2Array) -> void:
+	var bank := Color(0.62, 0.6, 0.56)
+	var inner := inset(ring, 3.0)
+	var outer := inset(ring, -0.8)
+	for i in ring.size():
+		var j := (i + 1) % ring.size()
+		var a0 := outer[i]; var a1 := outer[j]; var b0 := inner[i]; var b1 := inner[j]
+		var q := [Vector3(a0.x, 0.05, a0.y), Vector3(a1.x, 0.05, a1.y), Vector3(b1.x, -1.8, b1.y), Vector3(b0.x, -1.8, b0.y)]
+		var nrm: Vector3 = (q[1] - q[0]).cross(q[3] - q[0]).normalized()
+		if nrm.y < 0: nrm = -nrm
+		walks.quad(q[0], q[1], q[2], q[3], nrm, bank, Vector4(5, 0.9, 0, 0))
+		tank_colliders.append_array([q[0], q[1], q[2], q[0], q[2], q[3]])
+	var tris := Geometry2D.triangulate_polygon(inset(ring, 2.0))
+	if not tris.is_empty():
+		water.polygon(inset(ring, 2.0), tris, -1.15, true, Color(1, 1, 1), Vector4.ZERO)
 
 ## low perimeter wall with vertical kaavi (red-ochre) and white stripes (STYLE_BIBLE §2)
 func _kaavi_wall(ring: PackedVector2Array, h: float) -> void:

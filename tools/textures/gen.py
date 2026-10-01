@@ -249,6 +249,117 @@ ALL = {"noise": t_noise, "asphalt": t_asphalt, "plaster": t_plaster, "concrete":
        "grass": t_grass, "earth": t_earth, "granite": t_granite, "pavers": t_pavers, "brick": t_brick,
        "rooftile": t_rooftile, "cloth": t_cloth}
 
+# ------------------------------------------------------------------------------- vegetation & decals
+def _leaf_stamp(img, alpha, cx, cy, ang, L, W, col, n):
+    """draw one elliptical leaf (pointed) into img/alpha with wraparound off"""
+    yy, xx = np.mgrid[0:n, 0:n]
+    c, s = np.cos(ang), np.sin(ang)
+    u = (xx - cx) * c + (yy - cy) * s
+    v = -(xx - cx) * s + (yy - cy) * c
+    t = u / L
+    inside = (t > -1) & (t < 1) & (np.abs(v) < W * (1 - t ** 2) ** 0.8)
+    shade = 0.85 + 0.15 * np.clip(v / (W + 1e-6), -1, 1) + 0.1 * (np.abs(v) < W * 0.08)  # midrib
+    img[inside] = col * shade[inside, None]
+    alpha[inside] = 1.0
+
+
+def t_leaves(n):
+    """leaf-cluster card (neem / rain-tree style small leaflets), RGBA with alpha, 1 card ≈ 1.2 m"""
+    n = 512
+    img = np.zeros((n, n, 3)); alpha = np.zeros((n, n))
+    r = np.random.default_rng(5)
+    # twigs
+    for k in range(9):
+        a = r.uniform(0, 2 * np.pi); x0, y0 = n / 2 + r.normal(0, 30), n / 2 + r.normal(0, 30)
+        for t in np.linspace(0, 1, 120):
+            x, y = int(x0 + np.cos(a) * t * n * 0.42), int(y0 + np.sin(a) * t * n * 0.42)
+            if 0 <= x < n and 0 <= y < n:
+                img[max(0, y - 1):y + 2, max(0, x - 1):x + 2] = lin("#4a3a2a"); alpha[max(0, y - 1):y + 2, max(0, x - 1):x + 2] = 1
+    for k in range(900):
+        rad = np.sqrt(r.random()) * n * 0.45
+        a = r.uniform(0, 2 * np.pi)
+        cx, cy = n / 2 + np.cos(a) * rad, n / 2 + np.sin(a) * rad
+        col = tint(np.array([[r.random()]]), "#2f4a1c", "#6f8a2e")[0, 0] * r.uniform(0.75, 1.15)
+        _leaf_stamp(img, alpha, cx, cy, r.uniform(0, np.pi), r.uniform(9, 16), r.uniform(3, 5.5), col, n)
+    rgba = np.concatenate([np.clip(img, 0, 1) ** (1 / 2.2), alpha[..., None]], -1)
+    Image.fromarray((rgba * 255 + 0.5).astype(np.uint8), "RGBA").save(f"{OUT}/leaves_c.png", optimize=True)
+    print("wrote leaves")
+
+
+def t_frond(n):
+    """coconut-palm frond card: rachis along the card's length with pinnate leaflets, 1 card = 4.5 m x 1.4 m"""
+    W, H = 128, 512
+    img = np.zeros((H, W, 3)); alpha = np.zeros((H, W))
+    yy, xx = np.mgrid[0:H, 0:W]
+    rach = np.abs(xx - W / 2) < 2.5 * (1 - yy / H * 0.6)
+    img[rach] = lin("#8a7a3a"); alpha[rach] = 1
+    r = np.random.default_rng(9)
+    for y0 in range(10, H - 8, 6):
+        frac = y0 / H
+        L = (W / 2 - 4) * (0.55 + 0.45 * np.sin(np.pi * min(1.0, frac * 1.1)))
+        for side in (-1, 1):
+            droop = r.uniform(0.25, 0.45)
+            for t in np.linspace(0, 1, int(L)):
+                x = W / 2 + side * t * L
+                y = y0 + t * L * droop
+                w = 2.4 * (1 - t) + 0.6
+                yi, xi = int(y), int(x)
+                if 0 <= yi < H and 0 <= xi < W:
+                    ys = slice(max(0, int(y - w)), min(H, int(y + w) + 1))
+                    img[ys, xi] = tint(np.array([[r.random() * 0.6 + 0.2 * t]]), "#3c5a1e", "#9aa648")[0, 0]
+                    alpha[ys, xi] = 1
+    rgba = np.concatenate([np.clip(img, 0, 1) ** (1 / 2.2), alpha[..., None]], -1)
+    Image.fromarray((rgba * 255 + 0.5).astype(np.uint8), "RGBA").save(f"{OUT}/frond_c.png", optimize=True)
+    print("wrote frond")
+
+
+def t_kolam(n):
+    """atlas of 4x4 kolam patterns (rice-flour linework, sikku dot-grid loops, floral), white on transparent"""
+    from PIL import ImageDraw
+    cell = 256; N = 4
+    im = Image.new("LA", (cell * N, cell * N), (255, 0))
+    d = ImageDraw.Draw(im)
+    r = np.random.default_rng(3)
+    for k in range(N * N):
+        ox, oy = (k % N) * cell, (k // N) * cell
+        cx, cy = ox + cell / 2, oy + cell / 2
+        style = k % 4
+        lw = 4
+        if style == 0:  # sikku: dot grid with loops around dots
+            g = int(r.integers(4, 7)); sp = cell * 0.7 / g
+            for i in range(g):
+                for j in range(g):
+                    x = cx - sp * (g - 1) / 2 + i * sp; y = cy - sp * (g - 1) / 2 + j * sp
+                    d.ellipse([x - 2.5, y - 2.5, x + 2.5, y + 2.5], fill=(255, 255))
+                    if (i + j) % 2 == 0:
+                        d.arc([x - sp * 0.7, y - sp * 0.7, x + sp * 0.7, y + sp * 0.7], 0, 360, fill=(255, 255), width=lw)
+            d.rectangle([cx - sp * g / 2, cy - sp * g / 2, cx + sp * g / 2, cy + sp * g / 2], outline=(255, 255), width=lw)
+        elif style == 1:  # lotus / floral
+            petals = int(r.integers(6, 12)); R = cell * 0.38
+            for p in range(petals):
+                a = p / petals * 2 * np.pi
+                x, y = cx + np.cos(a) * R * 0.55, cy + np.sin(a) * R * 0.55
+                d.ellipse([x - R * 0.42, y - R * 0.42, x + R * 0.42, y + R * 0.42], outline=(255, 255), width=lw)
+            d.ellipse([cx - R * 0.25, cy - R * 0.25, cx + R * 0.25, cy + R * 0.25], outline=(255, 255), width=lw)
+        elif style == 2:  # star / geometric
+            pts = int(r.integers(5, 9)); R = cell * 0.42
+            poly = [(cx + np.cos(i / (pts * 2) * 2 * np.pi) * (R if i % 2 == 0 else R * 0.45), cy + np.sin(i / (pts * 2) * 2 * np.pi) * (R if i % 2 == 0 else R * 0.45)) for i in range(pts * 2)]
+            d.polygon(poly, outline=(255, 255), width=lw)
+            d.ellipse([cx - R * 0.6, cy - R * 0.6, cx + R * 0.6, cy + R * 0.6], outline=(255, 255), width=lw)
+        else:  # concentric squares with corner loops
+            for q in range(3):
+                h = cell * (0.38 - q * 0.1)
+                d.rectangle([cx - h, cy - h, cx + h, cy + h], outline=(255, 255), width=lw)
+                for sx in (-1, 1):
+                    for sy in (-1, 1):
+                        d.arc([cx + sx * h - 14, cy + sy * h - 14, cx + sx * h + 14, cy + sy * h + 14], 0, 360, fill=(255, 255), width=lw)
+    im.save(f"{OUT}/kolam.png", optimize=True)
+    print("wrote kolam")
+
+
+ALL.update({"leaves": t_leaves, "frond": t_frond, "kolam": t_kolam})
+
+
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--only", default="")
@@ -258,3 +369,5 @@ if __name__ == "__main__":
     for k, f in ALL.items():
         if a.only and k not in a.only.split(","): continue
         f(a.size)
+
+

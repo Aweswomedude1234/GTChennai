@@ -18,6 +18,7 @@ func setup(city: String) -> void:
 	painter.names = pack.names
 	painter.road_names = pack.road_names
 	add_child(painter)
+	_init_posters()
 	region = RegionBuilder.new(pack)
 	region.build()
 	_add_mesh("ground", region.ground, Mats.ground(), false)
@@ -25,6 +26,7 @@ func setup(city: String) -> void:
 	_add_mesh("walks", region.walks, Mats.generic(), true)
 	_add_mesh("tank_water", region.water, Mats.water(), false)
 	_add_mesh("sea", region.sea, Mats.sea(), false)
+	_add_mesh("landmarks", region.landmarks.mb, Mats.generic(), true)
 	# static colliders: ground (incl. beach slope), tank steps, kerbs and footpaths
 	var body := StaticBody3D.new()
 	body.name = "RegionCollider"
@@ -35,7 +37,7 @@ func setup(city: String) -> void:
 		var a := g.v[g.idx[i]]
 		if a.y > 0.011: continue   # skip area overlays (same plane)
 		ground_tris.append_array([a, g.v[g.idx[i + 1]], g.v[g.idx[i + 2]]])
-	for faces in [ground_tris, region.tank_colliders, region.kerb_colliders]:
+	for faces in [ground_tris, region.tank_colliders, region.kerb_colliders, region.landmarks.colliders]:
 		if faces.is_empty(): continue
 		var sh := ConcavePolygonShape3D.new()
 		sh.backface_collision = true
@@ -60,3 +62,8 @@ func _add_mesh(nm: String, mb: MB, mat: Material, shadows: bool) -> void:
 func set_focus(p: Vector3) -> void:
 	streamer.focus = Vector2(p.x, p.z)
 	clock.focus = p
+
+func _init_posters() -> void:
+	await get_tree().process_frame
+	StreetDetail.poster_atlas = await PosterPainter.paint(painter)
+	StreetDetail.poster_mat()
