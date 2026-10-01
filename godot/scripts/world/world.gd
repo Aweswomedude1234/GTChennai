@@ -49,6 +49,11 @@ func setup(city: String) -> void:
 	streamer.name = "Streamer"
 	add_child(streamer)
 	streamer.setup(pack, painter)
+	_build_horizon()
+	crowd = Crowd.new()
+	crowd.name = "Crowd"
+	add_child(crowd)
+	crowd.setup(pack)
 	print("[world] region built in %d ms (%d road verts, %d ground verts)" % [Time.get_ticks_msec() - t0, region.roads.count(), region.ground.count()])
 
 func _add_mesh(nm: String, mb: MB, mat: Material, shadows: bool) -> void:
@@ -67,3 +72,37 @@ func _init_posters() -> void:
 	await get_tree().process_frame
 	StreetDetail.poster_atlas = await PosterPainter.paint(painter)
 	StreetDetail.poster_mat()
+
+var horizon: HorizonCity
+var horizon_nodes := {}
+
+func _build_horizon() -> void:
+	horizon = HorizonCity.new(pack)
+	var id := WorkerThreadPool.add_task(horizon.build, true, "horizon city")
+	while not WorkerThreadPool.is_task_completed(id): await get_tree().process_frame
+	WorkerThreadPool.wait_for_task_completion(id)
+	var root := Node3D.new()
+	root.name = "Horizon"
+	add_child(root)
+	for key in horizon.chunk_meshes:
+		var mi := MeshInstance3D.new()
+		mi.mesh = horizon.chunk_meshes[key]
+		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		mi.visible = streamer.chunks[key].state == "none" if streamer.chunks.has(key) else true
+		root.add_child(mi)
+		horizon_nodes[key] = mi
+	var ring := MeshInstance3D.new()
+	ring.mesh = horizon.ring_mesh
+	ring.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	root.add_child(ring)
+	streamer.horizon_nodes = horizon_nodes
+	horizon_ready = true
+
+var horizon_ready := false
+
+var crowd: Crowd
+
+func _process(dt: float) -> void:
+	if crowd:
+		crowd.focus = Vector3(streamer.focus.x, 0, streamer.focus.y)
+		crowd.update(dt, clock.hour)

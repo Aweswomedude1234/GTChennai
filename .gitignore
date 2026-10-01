@@ -8,3 +8,4 @@ tools/**/__pycache__/
 test-results/
 docs/screens/dev/
 godot/.godot/
+docs/screens/studio/*.exr

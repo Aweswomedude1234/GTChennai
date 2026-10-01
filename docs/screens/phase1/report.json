@@ -1,20 +1,166 @@
-[
- {
-  "name": "mada_street",
-  "url": "http://localhost:5199/?cam=175,1.8,40,160,4,-60&hour=10&freeze=1&ssao=0&fdbg=m3",
-  "loadMs": 19727,
-  "stats": {
-   "fps": 13.608087091796806,
-   "frameMs": 73.48571428550142,
-   "worstMs": 79.59999999962747,
-   "draws": 121,
-   "tris": 478812,
-   "time": "10:00",
-   "chunks": "12 near 90 far (11 pending, 128 ms)",
-   "colliders": 12,
-   "pos": "160, -60"
+{
+  "bazaar_night": {
+    "adapter": "llvmpipe (LLVM 20.1.2, 256 bits)",
+    "chunk_gen_ms": 77.529,
+    "chunks_far": 35,
+    "chunks_near": 17,
+    "draw_calls": 454,
+    "fps": 1.0,
+    "max_upload_ms": 4.012,
+    "objects": 716,
+    "primitives": 5966337,
+    "static_mem_mb": 237.240661621094,
+    "video_mem_mb": 1258.43434143066,
+    "wait_frames": 81,
+    "wall_ms": 321054
   },
-  "errors": [],
-  "warnings": 1
- }
-]
+  "drive_auto": {
+    "adapter": "llvmpipe (LLVM 20.1.2, 256 bits)",
+    "cam": [
+      756.858093261719,
+      2.92379426956177,
+      2.10749435424805
+    ],
+    "cam_dot": -0.93843001127243,
+    "chunk_gen_ms": 43.943,
+    "chunks_built": 36,
+    "chunks_far": 33,
+    "chunks_near": 15,
+    "current_cam": "/root/Game/CameraRig/@Node3D@2115/@SpringArm3D@2116/@Camera3D@2117",
+    "distance_m": 545.790587167137,
+    "draw_calls": 424,
+    "end": [
+      745.102661132812,
+      -0.64873194694519
+    ],
+    "flipped_frames": 0,
+    "fps": 1.0,
+    "max_upload_ms": 2379.916,
+    "objects": 758,
+    "pdbg": [
+      false,
+      false,
+      2,
+      true,
+      "res://scripts/player/player.gd"
+    ],
+    "player": [
+      159.52490234375,
+      0.0083333570510149,
+      37.961311340332
+    ],
+    "primitives": 5042698,
+    "sim_s": 90.0000000000177,
+    "static_mem_mb": 244.820875167847,
+    "video_mem_mb": 1267.73728942871,
+    "wall_ms": 376319
+  },
+  "kutchery_road": {
+    "adapter": "llvmpipe (LLVM 20.1.2, 256 bits)",
+    "chunk_gen_ms": 51.073,
+    "chunks_far": 40,
+    "chunks_near": 17,
+    "draw_calls": 452,
+    "fps": 1.0,
+    "max_upload_ms": 4.012,
+    "objects": 714,
+    "primitives": 6044048,
+    "static_mem_mb": 234.668378829956,
+    "video_mem_mb": 1272.63743591309,
+    "wait_frames": 25,
+    "wall_ms": 98483
+  },
+  "mada_street": {
+    "adapter": "llvmpipe (LLVM 20.1.2, 256 bits)",
+    "chunk_gen_ms": 61.789,
+    "chunks_far": 41,
+    "chunks_near": 16,
+    "draw_calls": 559,
+    "fps": 1.0,
+    "max_upload_ms": 4.012,
+    "objects": 821,
+    "primitives": 5862266,
+    "static_mem_mb": 233.42001914978,
+    "video_mem_mb": 1251.63583374023,
+    "wait_frames": 65,
+    "wall_ms": 182058
+  },
+  "marina": {
+    "adapter": "llvmpipe (LLVM 20.1.2, 256 bits)",
+    "chunk_gen_ms": 62.738,
+    "chunks_far": 23,
+    "chunks_near": 12,
+    "draw_calls": 380,
+    "fps": 1.0,
+    "max_upload_ms": 4.012,
+    "objects": 642,
+    "primitives": 4239795,
+    "static_mem_mb": 232.676063537598,
+    "video_mem_mb": 1125.89788818359,
+    "wait_frames": 49,
+    "wall_ms": 152141
+  },
+  "overview": {
+    "adapter": "llvmpipe (LLVM 20.1.2, 256 bits)",
+    "chunk_gen_ms": 1.032,
+    "chunks_far": 35,
+    "chunks_near": 14,
+    "draw_calls": 405,
+    "fps": 1.0,
+    "max_upload_ms": 4.012,
+    "objects": 665,
+    "primitives": 4690222,
+    "static_mem_mb": 227.517107009888,
+    "video_mem_mb": 1268.46647644043,
+    "wait_frames": 106,
+    "wall_ms": 432146
+  },
+  "player_scene": {
+    "adapter": "llvmpipe (LLVM 20.1.2, 256 bits)",
+    "cam": [
+      156.177917480469,
+      2.09630870819092,
+      39.2224731445312
+    ],
+    "cam_dot": 0.984924018383026,
+    "chunk_gen_ms": 37.436,
+    "chunks_far": 39,
+    "chunks_near": 17,
+    "current_cam": "/root/Game/CameraRig/@Node3D@2115/@SpringArm3D@2116/@Camera3D@2117",
+    "draw_calls": 545,
+    "fps": 1.0,
+    "max_upload_ms": 4.012,
+    "objects": 891,
+    "pdbg": [
+      true,
+      true,
+      2,
+      true,
+      "res://scripts/player/player.gd"
+    ],
+    "player": [
+      159.52490234375,
+      0.0083333570510149,
+      37.961311340332
+    ],
+    "primitives": 6636452,
+    "static_mem_mb": 245.553728103638,
+    "video_mem_mb": 1305.54666137695,
+    "wall_ms": 225528
+  },
+  "temple_tank": {
+    "adapter": "llvmpipe (LLVM 20.1.2, 256 bits)",
+    "chunk_gen_ms": 56.878,
+    "chunks_far": 41,
+    "chunks_near": 17,
+    "draw_calls": 558,
+    "fps": 1.0,
+    "max_upload_ms": 4.012,
+    "objects": 820,
+    "primitives": 5798048,
+    "static_mem_mb": 235.313161849976,
+    "video_mem_mb": 1263.74005126953,
+    "wait_frames": 43,
+    "wall_ms": 162772
+  }
+}

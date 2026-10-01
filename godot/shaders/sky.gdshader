@@ -37,7 +37,7 @@ void sky() {
 	float glow = pow(1.0 - up, 6.0);
 	vec3 nightc = mix(vec3(0.016, 0.02, 0.04), vec3(0.11, 0.065, 0.04), glow);
 	vec3 cell = floor(d * 420.0);
-	float star = step(0.9975, h21(cell.xy + cell.z * 17.0)) * smoothstep(0.15, 0.5, up) * 0.6;
+	float star = step(0.9994, h21(cell.xy + cell.z * 17.0)) * smoothstep(0.25, 0.6, up) * 0.35;
 	nightc += vec3(star);
 	nightc = mix(nightc, nightc + vec3(0.03, 0.025, 0.02), cl);
 	vec3 col = mix(day * sky_energy, nightc, night_f);

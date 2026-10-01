@@ -21,12 +21,13 @@ var focus := Vector2.ZERO
 var max_jobs := 2
 var _wanted := 0
 var street: StreetDetail
+var horizon_nodes := {}
 
 func setup(p: CityPack, sp: SignPainter) -> void:
 	pack = p
 	# warm shared resources on the main thread before workers touch them
 	Mats.facade(); Mats.generic(); Props.foliage_mat(); StreetDetail.poster_mat(); StreetDetail.kolam_mat()
-	for m in ["tree_rain", "tree_neem", "tree_gulmohar", "tree_young", "palm", "palm_short", "shrub", "pole", "pole_lamp", "lamp_post", "transformer", "bike_parked", "scooter_parked", "crate", "stool", "cylinder", "drum", "sack", "bin", "stand"]:
+	for m in ["tree_rain", "tree_neem", "tree_gulmohar", "tree_young", "palm", "palm_short", "shrub", "pole", "pole_lamp", "lamp_post", "transformer", "bike_parked", "scooter_parked", "crate", "stool", "cylinder", "drum", "sack", "bin", "stand", "cart", "boat", "marina_lamp"]:
 		Props.get_mesh(m)
 	painter = sp
 	street = StreetDetail.new(p)
@@ -160,6 +161,7 @@ func _upload(res: Dictionary) -> void:
 	_unload(c)
 	var ctx: BuildingGen.Ctx = res.ctx
 	add_child(node)
+	if horizon_nodes.has(c.key): horizon_nodes[c.key].visible = false
 	if res.detail:
 		if ctx.sign.count() > 0: _paint_signs(c, node, ctx)
 		c.shops = ctx.shops
@@ -186,6 +188,7 @@ func _unload(c: Dictionary) -> void:
 		if c.state == "near": chunk_unloaded.emit(c.key, c)
 		c.node.queue_free()
 		c.node = null
+	if horizon_nodes.has(c.key): horizon_nodes[c.key].visible = true
 	c.state = "none"
 	_count()
 

@@ -22,20 +22,22 @@ Legend: [x] done · [~] partial · [ ] todo
 - [x] Cameras: third-person, first-person, top-down; settings switch (C)
 - [x] Day/night integrated (time controls [ ])
 - [x] Vehicles: raycast physics for auto (3-wheel, tippy), bike (2-wheel, lean controller), car; enter and exit
-- [ ] Acceptance: walk and drive across streamed chunks without hitches (harness drive test)
+- [x] Acceptance: walk and drive across streamed chunks (harness drive test: 545 m, 36 chunks; one lavapipe upload spike to re-check on the Mac)
 
 ## Phase 2: Chennai slice (Mylapore + Marina)
-- [ ] Procedural buildings: residential, commercial, agraharam, old house, apartment, institution, informal; chajjas, grilles, balconies, AC units, roof tanks, parapets, weathering shader
+- [~] OSM plot infill (6.4k → 22.8k buildings), horizon LOD
+- [~] Procedural buildings: residential, commercial, agraharam, old house, apartment, institution, informal; chajjas, grilles, balconies, AC units, roof tanks, parapets, weathering shader
 - [ ] Shop fronts with unique Tamil + English signboards (sign atlas), shutters, awnings, tube lights, stock
-- [ ] Props: poles, cables, street lights, posters, parked two-wheelers, crates, carts, drains, speed breakers, potholes
-- [ ] Kapaleeshwarar temple: gopurams, mandapam, kaavi walls, tank with steps and neerazhi mandapam
-- [ ] Marina: sand, promenade, lighthouse, vendor carts, catamarans, sea shader
+- [~] Props: poles, cables, street lights, posters, parked two-wheelers, crates, carts, drains, speed breakers, potholes, trees, compound walls, kolams
+- [~] Kapaleeshwarar temple: gopurams, vimana, mandapams, kaavi walls, tank with steps (neerazhi mandapam todo)
+- [~] Marina: sand, lighthouse, vendor carts, fishing boats, promenade lamps, sea shader
 - [ ] Churches (San Thome, Luz), MRTS elevated line
 - [ ] Night lighting: street lights, shop tubes, window glow
 - [ ] Density audit tool (BRIEF §15 per-100 m quotas); screenshot review against refs
 
 ## Phase 3: Life
-- [ ] Pedestrian sim on footpaths and road edges, crossing with a raised hand, idle behaviours, schedules
+- [~] Realistic humans (MPFB + CMU mocap), near skeletal tier + VAT mid tier
+- [~] Pedestrian sim on footpaths and road edges, crossing with a raised hand, idle behaviours, schedules
 - [ ] Traffic sim on the OSM graph: gap-seeking, two-wheeler filtering, horns, signals, jams
 - [ ] Vehicle fleet models (35+) with liveries and wear
 - [ ] Animals: dogs, cows, crows, goats

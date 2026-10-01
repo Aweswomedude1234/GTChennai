@@ -50,6 +50,9 @@ static func gen(b: Dictionary, ctx: Ctx) -> void:
 	var n := P.size()
 	if n < 3: return
 	var kind: String = b.k
+	if kind == "lighthouse":
+		_lighthouse(ctx, P, float(b.get("h", 45.72)))
+		return
 	var sacred := kind in ["temple", "church", "mosque", "mandapam"]
 	var levels := maxi(1, int(b.l))
 	var commercial := kind == "commercial"
@@ -193,6 +196,9 @@ static func gen(b: Dictionary, ctx: Ctx) -> void:
 			gbox.call(Vector3(mp.x + nrm.x * 0.06, 1.75, mp.y + nrm.z * 0.06), Vector3(0.3, 0.25, 0.05), rot, Color(0.12, 0.12, 0.12), GM.RUBBER, 0.6)
 			G.tube(Vector3(mp.x + nrm.x * 0.07, 2.0, mp.y + nrm.z * 0.07), Vector3(mp.x + nrm.x * 0.07, gh + 0.4, mp.y + nrm.z * 0.07), 0.015, 3, Color(0.05, 0.05, 0.05), Vector4(GM.RUBBER, 0.6, 0, 0))
 
+	# ---------------- church spire (San Thome Basilica style neo-Gothic: white, pointed, at the front)
+	if kind == "church" and ctx.detail:
+		_spire(ctx, r, P, H, edges)
 	# ---------------- roof
 	var tris := Geometry2D.triangulate_polygon(P)
 	if tile_roof:
@@ -387,3 +393,77 @@ static func _roof_clutter(ctx: Ctx, r: Rng, P: PackedVector2Array, H: float, lev
 		for q in 3:
 			var ang := q * TAU / 3.0
 			G.box(Vector3(mp.x + cos(ang) * 0.5, H + 12.5, mp.y + sin(ang) * 0.5), Vector3(0.15, 0.7, 0.06), -ang + PI * 0.5, Color(0.9, 0.9, 0.9), Vector4(GM.PAINT, 0.5, 0, 0))
+
+
+## Chennai Lighthouse (1977): triangular-section concrete tower, 45.7 m, red and white bands,
+## observation gallery near the top and a glazed lantern with a red dome
+static func _lighthouse(ctx: Ctx, P: PackedVector2Array, H: float) -> void:
+	var G := ctx.generic
+	var c := Vector2.ZERO
+	for p in P: c += p
+	c /= P.size()
+	var red := Rng.hex_lin("#b3261e"); var white := Rng.hex_lin("#f2f0ea")
+	var bands := 10
+	var r0 := 6.0; var r1 := 3.6
+	var gal := H - 7.0
+	for k in bands:
+		var y0 := gal * k / bands; var y1 := gal * (k + 1) / bands
+		var ra := lerpf(r0, r1, y0 / gal); var rb := lerpf(r0, r1, y1 / gal)
+		var col := red if k % 2 == 0 else white
+		for i in 3:
+			var a0 := TAU * i / 3.0 + PI / 2.0; var a1 := TAU * (i + 1) / 3.0 + PI / 2.0
+			var p0 := Vector3(c.x + cos(a0) * ra, y0, c.y + sin(a0) * ra); var p1 := Vector3(c.x + cos(a1) * ra, y0, c.y + sin(a1) * ra)
+			var q1 := Vector3(c.x + cos(a1) * rb, y1, c.y + sin(a1) * rb); var q0 := Vector3(c.x + cos(a0) * rb, y1, c.y + sin(a0) * rb)
+			var mid := (p0 + p1) * 0.5
+			var nrm := Vector3(mid.x - c.x, 0.08, mid.z - c.y).normalized()
+			G.quad(p0, p1, q1, q0, nrm, col, Vector4(GM.STUCCO, 0.8, 0, 0))
+			# small slit windows on the stair side
+			if k % 2 == 1 and i == 0:
+				var wm := (p0 + p1 + q0 + q1) * 0.25 + nrm * 0.05
+				G.box(wm, Vector3(0.25, 0.6, 0.03), atan2(nrm.x, nrm.z), Color(0.05, 0.05, 0.06), Vector4(GM.PAINT, 0.5, 0, 0))
+	# gallery deck with railing, lantern room, red dome, finial
+	G.cylinder(c.x, gal, c.y, r1 + 1.3, 0.35, 12, white, Vector4(GM.CONCRETE, 0.8, 0, 0))
+	G.cylinder(c.x, gal + 0.35, c.y, r1 + 1.25, 1.0, 16, Color(0.15, 0.15, 0.15), Vector4(GM.METAL, 0.5, 0, 0), Vector4.ZERO, false)
+	G.cylinder(c.x, gal + 0.35, c.y, r1 * 0.85, 2.6, 12, white, Vector4(GM.STUCCO, 0.8, 0, 0))
+	G.cylinder(c.x, gal + 2.95, c.y, 1.7, 2.4, 12, Color(0.75, 0.85, 0.9), Vector4(GM.GLASS, 0.05, 0, 0))
+	G.cylinder(c.x, gal + 4.1, c.y, 0.6, 0.6, 8, Color(1.0, 0.95, 0.8), Vector4(GM.EMISSIVE, 0.2, 1.0, 0))
+	G.cylinder(c.x, gal + 5.35, c.y, 1.9, 1.3, 12, red, Vector4(GM.METAL, 0.4, 0, 0), Vector4.ZERO, true, 0.25)
+	G.tube(Vector3(c.x, gal + 6.6, c.y), Vector3(c.x, H + 0.5, c.y), 0.06, 6, Color(0.2, 0.2, 0.2), Vector4(GM.METAL, 0.4, 0, 0))
+	ctx.lights.append_array([c.x, gal + 4.4, c.y, 2.0])
+	var tri := PackedVector2Array()
+	for i in 3: tri.append(c + Vector2(cos(TAU * i / 3.0 + PI / 2.0), sin(TAU * i / 3.0 + PI / 2.0)) * r0)
+	ctx.colliders.append({"f": tri, "h": H})
+
+static func _spire(ctx: Ctx, r: Rng, P: PackedVector2Array, H: float, edges: Array) -> void:
+	var G := ctx.generic
+	var area := absf(RegionBuilder.poly_area(P))
+	if area < 300.0: return
+	# front = the most street-facing edge
+	var best := 0; var br := -1
+	for i in P.size():
+		var e: int = int(edges[i]) if i < edges.size() else 0
+		if e > br: br = e; best = i
+	var a := P[best]; var b := P[(best + 1) % P.size()]
+	var t := (b - a).normalized()
+	var nrm := Vector2(t.y, -t.x)
+	var c := (a + b) * 0.5 - nrm * 3.2
+	var w := clampf(sqrt(area) * 0.18, 4.0, 7.0)
+	var th := clampf(sqrt(area) * 0.75, 18.0, 30.0)
+	var rot := atan2(nrm.x, nrm.y)
+	var white := Rng.hex_lin("#f4f1ea")
+	G.box(Vector3(c.x, th * 0.5, c.y), Vector3(w * 0.5, th * 0.5, w * 0.5), rot, white, Vector4(GM.STUCCO, 0.85, 0, 0))
+	# pointed lancet openings and pinnacles
+	for k in 3:
+		var y := th * (0.35 + k * 0.22)
+		G.box(Vector3(c.x + nrm.x * (w * 0.5 + 0.02), y, c.y + nrm.y * (w * 0.5 + 0.02)), Vector3(w * 0.14, th * 0.07, 0.03), rot, Color(0.08, 0.1, 0.14), Vector4(GM.GLASS, 0.1, 0, 0))
+	for q in 4:
+		var ang := rot + PI * 0.25 + q * PI * 0.5
+		var pc := Vector2(c.x, c.y) + Vector2(sin(ang), cos(ang)) * w * 0.68
+		G.cylinder(pc.x, th, pc.y, 0.32, 3.0, 6, white, Vector4(GM.STUCCO, 0.85, 0, 0), Vector4.ZERO, true, 0.02)
+	# octagonal spire with a cross
+	var sh := th * 0.9
+	G.cylinder(c.x, th, c.y, w * 0.48, sh, 8, white, Vector4(GM.STUCCO, 0.8, 0, 0), Vector4.ZERO, false, 0.15)
+	G.box(Vector3(c.x, th + sh + 0.9, c.y), Vector3(0.08, 0.9, 0.08), rot, Rng.hex_lin("#d4a017"), Vector4(GM.METAL, 0.3, 0, 0))
+	G.box(Vector3(c.x, th + sh + 1.2, c.y), Vector3(0.45, 0.08, 0.08), rot, Rng.hex_lin("#d4a017"), Vector4(GM.METAL, 0.3, 0, 0))
+	ctx.colliders.append({"f": PackedVector2Array([c + Vector2(-w, -w) * 0.5, c + Vector2(w, -w) * 0.5, c + Vector2(w, w) * 0.5, c + Vector2(-w, w) * 0.5]), "h": th})
+	r.next()

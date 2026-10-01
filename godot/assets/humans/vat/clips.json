@@ -1,0 +1,25 @@
+{
+ "fps": 30,
+ "clips": {
+  "walk": {
+   "row": 0,
+   "frames": 27
+  },
+  "walk_slow": {
+   "row": 27,
+   "frames": 36
+  },
+  "idle": {
+   "row": 63,
+   "frames": 60
+  },
+  "talk": {
+   "row": 123,
+   "frames": 60
+  },
+  "drink_tea": {
+   "row": 183,
+   "frames": 60
+  }
+ }
+}

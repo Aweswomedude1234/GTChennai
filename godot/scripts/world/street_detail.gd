@@ -33,8 +33,48 @@ func _add(x: float, z: float, item: Dictionary) -> void:
 	if not by_chunk.has(k): by_chunk[k] = []
 	by_chunk[k].append(item)
 
+## Marina: vendor carts on the dry sand by the promenade, 12 m four-head lamp posts along the
+## promenade edge, and fishing boats drawn up near the waterline at the fishing hamlets
+func _precompute_beach() -> void:
+	if not pack.has_coast(): return
+	var rnd := Rng.new(4242)
+	for a in pack.region.areas:
+		if a.k != "beach": continue
+		var poly := CityPack.pts2(a.pts)
+		if poly.size() < 3: continue
+		var bb := Rect2(poly[0], Vector2.ZERO)
+		for p in poly: bb = bb.expand(p)
+		var z := bb.position.y
+		while z < bb.end.y:
+			# the promenade edge: westmost sand point on this z line
+			# scanline: crossings of this z line with the polygon edges
+			var xs: Array[float] = []
+			for i in poly.size():
+				var pa := poly[i]; var pb := poly[(i + 1) % poly.size()]
+				if (pa.y <= z) != (pb.y <= z):
+					xs.append(pa.x + (z - pa.y) / (pb.y - pa.y) * (pb.x - pa.x))
+			xs.sort()
+			if xs.size() >= 2 and xs[1] - xs[0] > 12.0:
+				var x0: float = xs[0]
+				var cx := pack.coast_x(z)
+				if int(z) % 40 < 4:
+					_add(x0 + 2.0, z, {"t": "mlamp", "p": Vector2(x0 + 2.0, z)})
+				# vendor carts in a loose band 15–70 m from the promenade
+				for k in 2:
+					if rnd.next() < 0.55:
+						var px := x0 + rnd.range_f(14.0, 70.0)
+						if px < cx - 25.0:
+							_add(px, z, {"t": "cart", "p": Vector2(px, z + rnd.range_f(-3.0, 3.0)), "yaw": rnd.range_f(-0.5, 0.5) + PI * 0.5, "seed": rnd.seed_int()})
+				# boats near the waterline in the fishing hamlets
+				if (z > -720.0 and z < -440.0) or (z > 560.0 and z < 1040.0):
+					if rnd.next() < 0.7:
+						var bx := cx - rnd.range_f(8.0, 26.0)
+						_add(bx, z, {"t": "boat", "p": Vector2(bx, z + rnd.range_f(-2.0, 2.0)), "yaw": rnd.range_f(-0.25, 0.25), "seed": rnd.seed_int()})
+			z += 6.0
+
 ## walk every road once: poles (+cables to the previous pole), lamps, trees, breakers, drains
 func _precompute() -> void:
+	_precompute_beach()
 	var roads: Array = pack.region.roads
 	for ri in roads.size():
 		var r: Dictionary = roads[ri]
@@ -127,6 +167,19 @@ func build_chunk(key: String, _center: Vector2, ctx: BuildingGen.Ctx) -> void:
 			"tree": _tree(o, it, foot, shop_pts)
 			"bump": _bump(o, it)
 			"drain": _drain(o, it)
+			"mlamp":
+				_inst(o, "marina_lamp", _xf(it.p, 0.0, 0.0))
+				o.lights.append({"p": Vector3(it.p.x, 11.6, it.p.y), "kind": "led"})
+			"cart":
+				var cr := Rng.new(it.seed)
+				_inst(o, "cart", _xf(it.p, 0.0, it.yaw), Rng.hex_lin(cr.pick(["#1565c0", "#c62828", "#2e7d32", "#f9a825", "#6a1b9a", "#ef6c00"])))
+				o.lights.append({"p": Vector3(it.p.x, 2.1, it.p.y), "kind": "tube"})
+				for q in 2 + int(cr.next() * 3.0):
+					var sp: Vector2 = it.p + Vector2(cr.range_f(-2.0, 2.0), cr.range_f(1.2, 2.4) * (1.0 if cr.next() < 0.5 else -1.0))
+					_inst(o, "stool", _xf(sp, 0.0, cr.next() * TAU), Rng.hex_lin(cr.pick(["#c62828", "#1565c0", "#f5f5f5"])))
+			"boat":
+				var br := Rng.new(it.seed)
+				_inst(o, "boat", _xf(it.p, -0.25, it.yaw + (PI if br.next() < 0.5 else 0.0)), Rng.hex_lin(br.pick(["#1565c0", "#2e7d32", "#c62828", "#f9a825", "#00838f", "#f5f5f5"])))
 	for f in ctx.fronts:
 		if f.commercial: _shop_frontage(o, f, ctx)
 		else: _compound(o, f, foot)
@@ -438,10 +491,11 @@ func attach_chunk(node: Node3D, ctx: BuildingGen.Ctx) -> void:
 	for l in o.lights:
 		var ol := OmniLight3D.new()
 		ol.position = l.p
-		ol.omni_range = 16.0
-		ol.omni_attenuation = 1.3
-		ol.light_energy = 2.6
+		ol.omni_range = 22.0
+		ol.omni_attenuation = 1.1
+		ol.light_energy = 6.0
 		ol.light_color = Color(1.0, 0.68, 0.32) if l.kind == "sodium" else Color(0.86, 0.92, 1.0)
+		if l.kind == "tube": ol.omni_range = 7.0; ol.light_energy = 1.4; ol.light_color = Color(0.92, 0.97, 1.0)
 		ol.shadow_enabled = false
 		ol.distance_fade_enabled = true
 		ol.distance_fade_begin = 140.0

@@ -1,0 +1,402 @@
+[
+ {
+  "id": "man_00",
+  "sex": "m",
+  "macro": {
+   "gender": 1.0,
+   "age": 0.38,
+   "muscle": 0.48,
+   "weight": 0.54,
+   "height": 0.53,
+   "proportions": 0.5,
+   "race": {
+    "african": 0.402,
+    "caucasian": 0.494,
+    "asian": 0.105
+   }
+  },
+  "dress": "shirt_pants",
+  "sleeve": "half",
+  "hair": "short",
+  "towel": false,
+  "seed": 404194672
+ },
+ {
+  "id": "man_01",
+  "sex": "m",
+  "macro": {
+   "gender": 1.0,
+   "age": 0.45,
+   "muscle": 0.38,
+   "weight": 0.36,
+   "height": 0.57,
+   "proportions": 0.5,
+   "race": {
+    "african": 0.465,
+    "caucasian": 0.408,
+    "asian": 0.127
+   }
+  },
+  "dress": "shirt_lungi",
+  "sleeve": "half",
+  "hair": "short",
+  "towel": true,
+  "seed": 839084350
+ },
+ {
+  "id": "man_02",
+  "sex": "m",
+  "macro": {
+   "gender": 1.0,
+   "age": 0.5,
+   "muscle": 0.62,
+   "weight": 0.44,
+   "height": 0.57,
+   "proportions": 0.5,
+   "race": {
+    "african": 0.504,
+    "caucasian": 0.372,
+    "asian": 0.124
+   }
+  },
+  "dress": "shirt_lungi",
+  "sleeve": "half",
+  "hair": "short",
+  "towel": true,
+  "seed": 833701883
+ },
+ {
+  "id": "man_03",
+  "sex": "m",
+  "macro": {
+   "gender": 1.0,
+   "age": 0.55,
+   "muscle": 0.64,
+   "weight": 0.33,
+   "height": 0.45,
+   "proportions": 0.5,
+   "race": {
+    "african": 0.455,
+    "caucasian": 0.34,
+    "asian": 0.205
+   }
+  },
+  "dress": "shirt_veshti",
+  "sleeve": "half",
+  "hair": "short",
+  "towel": true,
+  "seed": 377815734
+ },
+ {
+  "id": "man_04",
+  "sex": "m",
+  "macro": {
+   "gender": 1.0,
+   "age": 0.62,
+   "muscle": 0.41,
+   "weight": 0.63,
+   "height": 0.42,
+   "proportions": 0.5,
+   "race": {
+    "african": 0.438,
+    "caucasian": 0.335,
+    "asian": 0.227
+   }
+  },
+  "dress": "shirt_pants",
+  "sleeve": "full",
+  "hair": "short",
+  "towel": false,
+  "seed": 517251336
+ },
+ {
+  "id": "man_05",
+  "sex": "m",
+  "macro": {
+   "gender": 1.0,
+   "age": 0.7,
+   "muscle": 0.58,
+   "weight": 0.69,
+   "height": 0.46,
+   "proportions": 0.5,
+   "race": {
+    "african": 0.375,
+    "caucasian": 0.472,
+    "asian": 0.154
+   }
+  },
+  "dress": "shirt_pants",
+  "sleeve": "half",
+  "hair": "short",
+  "towel": false,
+  "seed": 197560960
+ },
+ {
+  "id": "man_06",
+  "sex": "m",
+  "macro": {
+   "gender": 1.0,
+   "age": 0.82,
+   "muscle": 0.37,
+   "weight": 0.45,
+   "height": 0.4,
+   "proportions": 0.5,
+   "race": {
+    "african": 0.493,
+    "caucasian": 0.355,
+    "asian": 0.151
+   }
+  },
+  "dress": "shirt_veshti",
+  "sleeve": "full",
+  "hair": "short",
+  "towel": true,
+  "seed": 962551750
+ },
+ {
+  "id": "man_07",
+  "sex": "m",
+  "macro": {
+   "gender": 1.0,
+   "age": 0.9,
+   "muscle": 0.69,
+   "weight": 0.53,
+   "height": 0.47,
+   "proportions": 0.5,
+   "race": {
+    "african": 0.442,
+    "caucasian": 0.443,
+    "asian": 0.115
+   }
+  },
+  "dress": "shirt_veshti",
+  "sleeve": "full",
+  "hair": "bald_sides",
+  "towel": false,
+  "seed": 102634811
+ },
+ {
+  "id": "woman_00",
+  "sex": "f",
+  "macro": {
+   "gender": 0.0,
+   "age": 0.4,
+   "muscle": 0.36,
+   "weight": 0.59,
+   "height": 0.4,
+   "proportions": 0.5,
+   "cupsize": 0.56,
+   "firmness": 0.5,
+   "race": {
+    "african": 0.432,
+    "caucasian": 0.35,
+    "asian": 0.218
+   }
+  },
+  "dress": "saree",
+  "sleeve": "short",
+  "hair": "plait",
+  "seed": 663752041
+ },
+ {
+  "id": "woman_01",
+  "sex": "f",
+  "macro": {
+   "gender": 0.0,
+   "age": 0.46,
+   "muscle": 0.35,
+   "weight": 0.51,
+   "height": 0.49,
+   "proportions": 0.5,
+   "cupsize": 0.47,
+   "firmness": 0.5,
+   "race": {
+    "african": 0.43,
+    "caucasian": 0.461,
+    "asian": 0.109
+   }
+  },
+  "dress": "saree",
+  "sleeve": "short",
+  "hair": "bun",
+  "seed": 596466468
+ },
+ {
+  "id": "woman_02",
+  "sex": "f",
+  "macro": {
+   "gender": 0.0,
+   "age": 0.52,
+   "muscle": 0.52,
+   "weight": 0.56,
+   "height": 0.45,
+   "proportions": 0.5,
+   "cupsize": 0.59,
+   "firmness": 0.5,
+   "race": {
+    "african": 0.35,
+    "caucasian": 0.472,
+    "asian": 0.178
+   }
+  },
+  "dress": "saree",
+  "sleeve": "short",
+  "hair": "plait",
+  "seed": 695677601
+ },
+ {
+  "id": "woman_03",
+  "sex": "f",
+  "macro": {
+   "gender": 0.0,
+   "age": 0.58,
+   "muscle": 0.4,
+   "weight": 0.71,
+   "height": 0.43,
+   "proportions": 0.5,
+   "cupsize": 0.59,
+   "firmness": 0.5,
+   "race": {
+    "african": 0.352,
+    "caucasian": 0.504,
+    "asian": 0.144
+   }
+  },
+  "dress": "nighty",
+  "sleeve": "short",
+  "hair": "plait",
+  "seed": 320937385
+ },
+ {
+  "id": "woman_04",
+  "sex": "f",
+  "macro": {
+   "gender": 0.0,
+   "age": 0.66,
+   "muscle": 0.55,
+   "weight": 0.78,
+   "height": 0.47,
+   "proportions": 0.5,
+   "cupsize": 0.57,
+   "firmness": 0.5,
+   "race": {
+    "african": 0.425,
+    "caucasian": 0.436,
+    "asian": 0.138
+   }
+  },
+  "dress": "churidar",
+  "sleeve": "short",
+  "hair": "plait",
+  "seed": 627695855
+ },
+ {
+  "id": "woman_05",
+  "sex": "f",
+  "macro": {
+   "gender": 0.0,
+   "age": 0.75,
+   "muscle": 0.4,
+   "weight": 0.51,
+   "height": 0.46,
+   "proportions": 0.5,
+   "cupsize": 0.45,
+   "firmness": 0.5,
+   "race": {
+    "african": 0.302,
+    "caucasian": 0.478,
+    "asian": 0.221
+   }
+  },
+  "dress": "saree",
+  "sleeve": "short",
+  "hair": "plait",
+  "seed": 968156212
+ },
+ {
+  "id": "woman_06",
+  "sex": "f",
+  "macro": {
+   "gender": 0.0,
+   "age": 0.88,
+   "muscle": 0.53,
+   "weight": 0.4,
+   "height": 0.45,
+   "proportions": 0.5,
+   "cupsize": 0.52,
+   "firmness": 0.5,
+   "race": {
+    "african": 0.371,
+    "caucasian": 0.48,
+    "asian": 0.149
+   }
+  },
+  "dress": "saree",
+  "sleeve": "short",
+  "hair": "plait",
+  "seed": 303127804
+ },
+ {
+  "id": "child_00",
+  "sex": "m",
+  "macro": {
+   "gender": 1.0,
+   "age": 0.21,
+   "muscle": 0.4,
+   "weight": 0.45,
+   "height": 0.5,
+   "proportions": 0.5,
+   "race": {
+    "african": 0.418,
+    "caucasian": 0.451,
+    "asian": 0.131
+   }
+  },
+  "dress": "uniform_shorts",
+  "sleeve": "half",
+  "hair": "short",
+  "seed": 327230716
+ },
+ {
+  "id": "child_01",
+  "sex": "f",
+  "macro": {
+   "gender": 0.0,
+   "age": 0.19,
+   "muscle": 0.4,
+   "weight": 0.45,
+   "height": 0.5,
+   "proportions": 0.5,
+   "race": {
+    "african": 0.393,
+    "caucasian": 0.433,
+    "asian": 0.175
+   }
+  },
+  "dress": "uniform_skirt",
+  "sleeve": "half",
+  "hair": "plait",
+  "seed": 464086421
+ },
+ {
+  "id": "child_02",
+  "sex": "m",
+  "macro": {
+   "gender": 1.0,
+   "age": 0.19,
+   "muscle": 0.4,
+   "weight": 0.45,
+   "height": 0.5,
+   "proportions": 0.5,
+   "race": {
+    "african": 0.399,
+    "caucasian": 0.44,
+    "asian": 0.161
+   }
+  },
+  "dress": "uniform_shorts",
+  "sleeve": "half",
+  "hair": "short",
+  "seed": 285924535
+ }
+]

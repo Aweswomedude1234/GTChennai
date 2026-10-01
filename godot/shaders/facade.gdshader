@@ -119,8 +119,10 @@ void fragment() {
 	wall *= 1.0 - streak - under * 0.55;
 	wall = mix(wall, wall * vec3(0.58, 0.64, 0.56), damp);
 	// peeling paint revealing grey plaster or brick on weathered/old buildings
-	float peel = smoothstep(0.86, 0.9, nz2.r * 0.7 + nz.b * 0.3 + weather * 0.08) * step(0.75, weather) * (1.0 - opening);
-	wall = mix(wall, mix(vec3(0.45, 0.44, 0.41), texture(brick_c, vec2(along, wp.y) / 1.2).rgb, step(0.95, nz2.r)), peel);
+	// peeling paint in larger irregular patches on weathered walls (grey plaster beneath)
+	float peel_n = nz.b * 0.65 + nz2.g * 0.35;
+	float peel = smoothstep(0.8, 0.83, peel_n) * step(0.8, weather) * (1.0 - opening);
+	wall = mix(wall, vec3(0.42, 0.41, 0.38) * (0.9 + nz2.r * 0.2), peel * 0.85);
 	if (k == 8) wall = paint * (0.9 + grime * 0.12);
 
 	// ---------------- window frames, grilles, shutters
@@ -201,7 +203,7 @@ void fragment() {
 	NORMAL_MAP = mix(nmap(pn), vec3(0.5, 0.5, 1.0), max(opening, max(shop, door)));
 	NORMAL_MAP_DEPTH = 0.8;
 	// night: lit windows show their room; open shops glow
-	vec3 emis = winc * max(win, bal) * lit * 1.6 * (1.0 - grille * 0.8);
-	emis += shop_in * shop * is_open * mix(0.25, 1.3, night) * power;
+	vec3 emis = min(winc, vec3(0.6)) * max(win, bal) * lit * 0.9 * (1.0 - grille * 0.8);
+	emis += min(shop_in, vec3(0.7)) * shop * is_open * mix(0.08, 0.45, night) * power;
 	EMISSION = emis;
 }

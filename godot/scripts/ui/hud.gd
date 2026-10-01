@@ -45,7 +45,7 @@ func _process(dt: float) -> void:
 	t += "draws %d  prims %.2fM  objs %d\n" % [RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME), RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_PRIMITIVES_IN_FRAME) / 1e6, RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_OBJECTS_IN_FRAME)]
 	t += "vram %d MB  mem %d MB\n" % [RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_VIDEO_MEM_USED) / 1048576, OS.get_static_memory_usage() / 1048576]
 	t += "chunks %d near %d far (%d pending, gen %.0f ms, upload max %.1f ms)\n" % [s.near, s.far, s.pending, s.last_ms, s.max_upload_ms]
-	t += "time %s  NPCs %d  vehicles %d\n" % [world.clock.clock_text(), npc_count, vehicle_count]
+	t += "time %s  NPCs %d (%d near)  vehicles %d\n" % [world.clock.clock_text(), world.crowd.stats.agents if world.crowd else 0, world.crowd.stats.near if world.crowd else 0, vehicle_count]
 	if player:
 		var p := player.global_position
 		t += "pos %.0f, %.0f   cam %s" % [p.x, p.z, cam_rig.get("mode") if cam_rig else ""]

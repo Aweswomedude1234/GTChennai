@@ -2,12 +2,14 @@
 
 > **Read this first.** Current state and next steps are at the top; history below.
 
-## Current state (2026-10-01, session 2 — Godot port)
+## Current state (2026-10-01, session 2 — Godot port + streetscape + realistic humans)
 - **Engine: Godot 4.7.2** (owner confirmed). Project in `godot/`; see CLAUDE.md for commands.
-- **Ported:** city pack + region loader, ground/areas/roads/junctions/footpaths/kerbs, stepped temple tank with kaavi-striped wall, beach slope, animated sea, procedural buildings (cells, chajjas, balconies with grilles and drying clothes, AC units, drain pipes, meter boards, parapets, tile roofs, roof tanks/mumty/dish/clothes lines/mobile towers), shop fronts with Tamil+English sign atlases, near/far chunk streaming on worker threads with building colliders, Chennai day/night sky + fog + global shader uniforms.
-- **New in Godot:** player on foot (CharacterBody3D, step-up), camera rig (third/first/top), raycast vehicles (auto 3-wheel tippy, bike with lean controller, hatchback car), enter/exit, autopilot on the road graph, HUD with street names, harness with scene/drive tests, asset studio.
-- **Next (in order):** (1) OSM building **infill** — OSM misses most buildings, so streets read as empty lots; (2) street detail (poles + cable tangles, street lights, trees, compound walls/gates, parked two-wheeler rows, posters, stalls, drains, speed breakers); (3) building variety (setbacks, staircases, pillars, shading bands); (4) Phase 1 acceptance run and tag `phase1`; then Phase 2 per PLAN.md, with the realistic-human pipeline (MPFB in Blender) as a parallel track.
-- **Pushing:** this session cannot push yet (Claude GitHub app lacks write access to the repo); commits are local until the owner installs the app. If you are a later session with access, push `main`.
+- **Phase 1 (Godot) done:** city pack + region loader; ground/areas/roads/junctions/footpaths/kerbs; stepped temple tanks with kaavi walls, canals with banks; beach and animated sea; procedural buildings with façade interior mapping; Tamil+English sign atlases; near/far streaming with node trees built on worker threads (main-thread upload ≤10 ms); horizon LOD (every building as a box + a synthetic city ring to the horizon); Chennai day/night; player (CharacterBody3D, step-up); third/first/top cameras; raycast auto/bike/car; autopilot; harness with scene/drive tests; asset studio.
+- **Streetscape (Phase 2, in progress):** `tools/osm/infill.py` fills the plots OSM misses (6,410 → 22,798 buildings), classifies tanks vs canals, cleans the coastline, turns temple-compound buildings into mandapams and derives gopurams/vimanas/compound walls. `street_detail.gd`: poles every 30–40 m with power lines and service-drop cable tangles, LED/sodium street lights (real OmniLights at night), street trees/palms (leaf-card foliage), transformers, speed breakers, RCC drain slabs, compound walls with gates, kolams (fade through the day), parked two-wheeler rows, trade-specific shop clutter, posters and political wall writing (global poster atlas: TMEK/ATM, film, kanneer anjali, birthday flex, ads). `landmark_gen.gd`: Dravidian gopurams (granite base + tapering tiers with polychrome figures and shrine parapets + kalasams), vimanas.
+- **Realistic humans (new):** `tools/humans/build_humans.py` (Blender `bpy` + MPFB2, CC0) builds 18 body variants (men/women/children, South-Indian-leaning ethnic blend, randomised facial targets, brows, moustaches, hair with volume, shirts/T-shirts/blouses/kurtas, trousers, veshti/lungi/saree to the ankle, pallu/dupatta/towel) rigged to MPFB's `cmu_mb` skeleton; `tools/humans/build_anims.py` retargets 16 CMU mocap clips (walk ×4, jog, run, idle ×2, talk, argue, drink_tea, traffic_police, sit, squat, punch, reach). `HumanActor` re-shades each instance (skin tone, garment colours/patterns, oiled hair) — the player now uses it.
+- **Next (in order):** (1) Phase 1 acceptance write-up + tag; (2) humans: better hair (cards), stubble/skin detail, garment drape (pallu/towel), mid-tier crowd via VAT bakes of decimated bodies; (3) Phase 2 remaining: Marina (lighthouse, promenade, vendor carts, catamarans), San Thome/Luz churches, MRTS line, night lighting audit, density audit tool; (4) Phase 3 crowds/traffic.
+- **Pushing:** pushes are refused until the owner installs the Claude GitHub App on the repo; commits are local. A later session with access should `git push origin main --tags`.
+- **Workspace notes:** Blender runs as `bpy` 5.2.2 in a venv (`/home/claude/bpyenv`); MPFB is installed as a Blender extension (`~/.config/blender/5.2/extensions/user_default/mpfb`, from github.com/makehumancommunity/mpfb2); CMU BVH from github.com/una-dinosauria/cmu-mocap (sparse checkout in `/home/claude/cmu`). On the Mac: `pip install bpy` (Python 3.13) and copy `mpfb2/src/mpfb` into Blender's extensions folder.
 
 ## Handoff from session 1 (ThinkPad, three.js)
 
@@ -82,6 +84,12 @@ The first Mac task is to confirm Godot with the owner if they haven't already, i
 ## Session log
 ### Session 1 (2026-10-01, ThinkPad)
 Phase 0 complete and tagged. Phase 1 partly built (above). STYLE_BIBLE v1 written from 16 Commons references. The local-test note for the crowd: dress mix reads correctly. Missing: faces, hand detail and gait variety (acceptable for mid and far tiers only).
+
+### Phase 1 acceptance (Godot) — 2026-10-01
+- Shots: `docs/screens/phase1/` (overview, mada_street, kutchery_road, temple_tank, marina, bazaar_night, player_scene, drive_auto); stats in `report.json`.
+- Drive test: autopilot auto, 90 s sim, **545 m across 36 streamed chunks, 0 flipped frames**, chunk generation 40–90 ms on a worker thread, typical main-thread upload ≤ 10 ms. One upload spike of 2.4 s on lavapipe (software Vulkan) — profile on the Mac; suspect first-use pipeline compilation of a new material, fix with a warm-up pass at load if it reproduces.
+- Local test (would a Chennai native notice anything wrong?): yes — no people or traffic yet (Phase 3), parked bikes are boxy placeholders, ground between buildings is too open in places, shop interiors are generic. Recorded as Phase 2/3 work.
+- Performance numbers from the cloud harness are software-rendered (~1 fps) and not meaningful; measure fps on the M5.
 
 ### Session 2 (2026-10-01, cloud workspace + Mac link)
 - Installed Godot 4.7.2 (Linux build) with Mesa lavapipe + Xvfb for headless screenshots. Fonts re-fetched as full TTFs. Procedural texture set generated.

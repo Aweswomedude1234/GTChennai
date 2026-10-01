@@ -50,6 +50,9 @@ static func _build(name: String) -> Mesh:
 		"sack": return _sack()
 		"bin": return _bin()
 		"stand": return _display_stand()
+		"cart": return _cart()
+		"boat": return _boat()
+		"marina_lamp": return _marina_lamp()
 	push_error("unknown prop " + name)
 	return BoxMesh.new()
 
@@ -276,4 +279,69 @@ static func _display_stand() -> ArrayMesh:
 		var y := 0.3 + i * 0.32
 		mb.box(Vector3(0, y, -0.05 + i * 0.07), Vector3(0.52, 0.02, 0.18), 0.0, w, g(GM.WOOD, 0.8))
 		mb.box(Vector3(0, y + 0.08, -0.05 + i * 0.07), Vector3(0.48, 0.06, 0.15), 0.0, Color(1, 1, 1), g(GM.CLOTH, 0.8))  # goods (tinted)
+	return mb.to_mesh(Mats.generic())
+
+
+## sundal / bajji / ice-cream pushcart: wooden box on four cycle wheels, glass case, tarpaulin canopy,
+## tube light, steel vessels; body tinted per instance
+static func _cart() -> ArrayMesh:
+	var mb := MB.new(false)
+	var wood := Rng.hex_lin("#6a4a30")
+	mb.box(Vector3(0, 0.82, 0), Vector3(0.75, 0.22, 0.45), 0.0, Color(1, 1, 1), g(GM.PAINT, 0.5))
+	mb.box(Vector3(0, 0.58, 0), Vector3(0.77, 0.03, 0.47), 0.0, wood, g(GM.WOOD, 0.8))
+	mb.box(Vector3(0, 1.2, -0.1), Vector3(0.6, 0.16, 0.25), 0.0, Color(0.7, 0.8, 0.85), g(GM.GLASS, 0.05))
+	for x in [-0.55, 0.55]:
+		for z in [-0.4, 0.4]:
+			mb.tube(Vector3(x, 1.04, z), Vector3(x, 2.2, z), 0.02, 4, Rng.hex_lin("#5a5a5a"), g(GM.METAL, 0.5))
+	mb.box(Vector3(0, 2.22, 0), Vector3(0.85, 0.02, 0.6), 0.0, Rng.hex_lin("#1565c0"), g(GM.TARP, 0.7))
+	mb.box(Vector3(0, 2.1, -0.4), Vector3(0.5, 0.02, 0.02), 0.0, Color(0.95, 0.97, 1.0), g(GM.EMISSIVE, 0.3, 1.0))
+	for q in 3:
+		mb.cylinder(-0.4 + q * 0.4, 1.04, 0.2, 0.15, 0.22, 10, Rng.hex_lin("#c9c9c6"), g(GM.METAL, 0.25))  # steel vessels
+	mb.cylinder(0.4, 1.26, 0.2, 0.11, 0.05, 10, Rng.hex_lin("#e0b030"), g(GM.CLOTH, 0.9))  # sundal heap
+	mb.box(Vector3(0, 1.5, 0.46), Vector3(0.6, 0.12, 0.01), 0.0, Rng.hex_lin("#f9a825"), g(GM.PAINT, 0.4))  # name board
+	for x in [-0.6, 0.6]:
+		for z in [-0.35, 0.35]:
+			var wm := VehicleDefs.wheel_mesh(Color(0.5, 0.5, 0.5), 0.28, 0.04)
+			var arr := wm.surface_get_arrays(0)
+			var base := mb.count()
+			var verts: PackedVector3Array = arr[Mesh.ARRAY_VERTEX]
+			var nrms: PackedVector3Array = arr[Mesh.ARRAY_NORMAL]
+			var cols: PackedColorArray = arr[Mesh.ARRAY_COLOR]
+			var c0: PackedFloat32Array = arr[Mesh.ARRAY_CUSTOM0]
+			for i in verts.size():
+				mb.vert(verts[i] * Vector3(1, 1, 1) + Vector3(x, 0.28, z), nrms[i], cols[i], Vector2.ZERO, Vector4(c0[i * 4], c0[i * 4 + 1], c0[i * 4 + 2], c0[i * 4 + 3]))
+			for i in arr[Mesh.ARRAY_INDEX]: mb.idx.append(i + base)
+	return mb.to_mesh(Mats.generic())
+
+## fibre-glass fishing boat (vallam) drawn up on the sand, hull tinted per instance, white sheer stripe
+static func _boat() -> ArrayMesh:
+	var mb := MB.new(false)
+	var L := 8.5; var W := 1.6
+	var segs := 10
+	for i in segs:
+		var t0 := float(i) / segs; var t1 := float(i + 1) / segs
+		var w0 := W * 0.5 * sin(PI * clampf(t0 * 1.05, 0.0, 1.0)) + 0.05; var w1 := W * 0.5 * sin(PI * clampf(t1 * 1.05, 0.0, 1.0)) + 0.05
+		var z0 := -L * 0.5 + L * t0; var z1 := -L * 0.5 + L * t1
+		var h0 := 0.75 + 0.35 * absf(t0 - 0.5) * 2.0; var h1 := 0.75 + 0.35 * absf(t1 - 0.5) * 2.0
+		for sd in [-1.0, 1.0]:
+			mb.quad(Vector3(sd * w0 * 0.55, 0.1, z0), Vector3(sd * w1 * 0.55, 0.1, z1), Vector3(sd * w1, h1, z1), Vector3(sd * w0, h0, z0), Vector3(sd, -0.3, 0).normalized(), Color(1, 1, 1), g(GM.PAINT, 0.35))
+			mb.quad(Vector3(sd * w0, h0 - 0.12, z0), Vector3(sd * w1, h1 - 0.12, z1), Vector3(sd * w1, h1, z1), Vector3(sd * w0, h0, z0), Vector3(sd, 0, 0), Color(0.95, 0.95, 0.92), g(GM.PAINT, 0.35))
+		mb.quad(Vector3(-w0 * 0.55, 0.1, z0), Vector3(w0 * 0.55, 0.1, z0), Vector3(w1 * 0.55, 0.1, z1), Vector3(-w1 * 0.55, 0.1, z1), Vector3.UP, Rng.hex_lin("#5a4a3a"), g(GM.WOOD, 0.8))
+	mb.box(Vector3(0, 0.5, 0), Vector3(W * 0.45, 0.04, 0.12), 0.0, Rng.hex_lin("#6a4a30"), g(GM.WOOD, 0.8))
+	mb.box(Vector3(0, 0.75, L * 0.5 - 0.6), Vector3(0.18, 0.35, 0.2), 0.0, Rng.hex_lin("#2a2a2a"), g(GM.METAL, 0.5))  # outboard
+	mb.box(Vector3(0.3, 0.3, -1.0), Vector3(0.6, 0.12, 0.8), 0.3, Rng.hex_lin("#3a5a7a"), g(GM.CLOTH, 0.9))  # nets
+	return mb.to_mesh(Mats.generic())
+
+## Marina promenade light: 12 m galvanised pole with four LED heads
+static func _marina_lamp() -> ArrayMesh:
+	var mb := MB.new(false)
+	var steel := Rng.hex_lin("#8a8e90")
+	mb.tube(Vector3.ZERO, Vector3(0, 12.0, 0), 0.13, 8, steel, g(GM.METAL, 0.45), Vector4.ZERO, 0.07)
+	mb.cylinder(0, 0, 0, 0.3, 0.6, 8, Rng.hex_lin("#8a8a86"), g(GM.CONCRETE, 0.9))
+	for q in 4:
+		var a := q * PI * 0.5 + PI * 0.25
+		var d := Vector3(cos(a), 0, sin(a))
+		mb.tube(Vector3(0, 11.7, 0), Vector3(0, 11.9, 0) + d * 0.9, 0.035, 5, steel, g(GM.METAL, 0.45))
+		mb.box(Vector3(0, 11.9, 0) + d * 1.05, Vector3(0.22, 0.06, 0.12), -a, Rng.hex_lin("#5a5a5a"), g(GM.METAL, 0.4))
+		mb.box(Vector3(0, 11.83, 0) + d * 1.05, Vector3(0.19, 0.012, 0.1), -a, Color(0.95, 0.97, 1.0), g(GM.LED, 0.3, 1.0))
 	return mb.to_mesh(Mats.generic())

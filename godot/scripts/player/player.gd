@@ -4,7 +4,7 @@ extends CharacterBody3D
 
 var cam_rig: CameraRig
 var world: World
-var body: ProcHuman
+var body: HumanActor
 var vehicle: Node = null
 var walk_speed := 1.5
 var jog_speed := 3.4
@@ -26,13 +26,14 @@ func _ready() -> void:
 	_shape.shape = cap
 	_shape.position.y = 0.875
 	add_child(_shape)
-	body = ProcHuman.new()
-	var a := Appearance.new()
-	# Selva: 29, back from Dubai — shirt and trousers, a moustache, mid-brown skin
-	a.variant = "man_pants"; a.sex = "m"; a.scale = 1.0; a.mustache = true
-	a.skin = Color("#8c5e3e"); a.hair = Color("#120e0c"); a.top = Color("#7fa2c8"); a.lower = Color("#2b2b2b")
-	body.build(a)
+	body = HumanActor.new()
 	add_child(body)
+	# Selva: 29, back from Dubai — shirt and trousers, a moustache, mid-brown skin
+	var spec: Dictionary = HumanActor.pick_spec(Rng.new(29), "m", false, "shirt_pants")
+	var a := HumanActor.appearance_for(spec, Rng.new(29))
+	a.skin = Color("#8c5e3e"); a.top = Color("#7fa2c8"); a.lower = Color("#2b2b2b"); a.top_pattern = 0
+	body.build(spec, a, 29)
+
 
 func get_exclusions() -> Array:
 	return [get_rid()]
