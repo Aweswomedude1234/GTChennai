@@ -83,6 +83,42 @@ func _ready() -> void:
 					a.player.seek(0.5, true)
 				size = 0.42
 				ty = 1.5
+			"v_auto", "v_hatch", "v_bike", "v_scooter", "v_bus":
+				var vid := s.substr(2)
+				node = Node3D.new()
+				node.add_child(VehicleModel.make(vid, 3))
+				size = {"auto": 2.6, "hatch": 3.4, "bike": 2.0, "scooter": 1.9, "bus": 9.0}[vid]
+				ty = {"bus": 1.6, "hatch": 0.7, "auto": 0.9}.get(vid, 0.6)
+			"riders":
+				node = Node3D.new()
+				var specs := HumanActor.specs()
+				var setups := [["bike", ["ride_bike", "ride_pillion"]], ["scooter", ["ride_scooter"]], ["auto", ["ride_auto", "ride_pass", "ride_pass"]]]
+				for i in setups.size():
+					var vm := VehicleModel.make(setups[i][0], 21 + i)
+					vm.position = Vector3((i - 1) * 2.0, 0, 0)
+					node.add_child(vm)
+					var clips_: Array = setups[i][1]
+					for k in clips_.size():
+						var a := HumanActor.new()
+						vm.add_child(a)
+						a.build(specs[(i * 5 + k * 3) % specs.size()], null, 40 + i * 7 + k)
+						a.ride(clips_[k], 0.0 if clips_[k] != "ride_pass" else (0.28 if k == 1 else -0.28))
+				size = 2.8
+				ty = 0.9
+			"fleet":
+				node = Node3D.new()
+				var x := -9.0
+				var k := 0
+				for f in ["bus_0", "hatch_0", "hatch_2", "auto_0", "auto_1", "bike_0", "scooter_1"]:
+					k += 1
+					var inst: Node3D = VehicleModel.make(f.split("_")[0], 11 + k * 7)
+					var wdt := 2.6 if f.begins_with("bus") else (1.7 if f.begins_with("hatch") else (1.4 if f.begins_with("auto") else 0.8))
+					x += wdt * 0.5 + 0.4
+					inst.position = Vector3(x, 0, 0)
+					x += wdt * 0.5
+					node.add_child(inst)
+				size = 7.0
+				ty = 1.0
 			"auto", "bike", "car":
 				var d: Dictionary = VehicleDefs.auto_rickshaw(5) if s == "auto" else (VehicleDefs.bike(5) if s == "bike" else VehicleDefs.car(5))
 				node = Node3D.new()

@@ -21,6 +21,7 @@ var wheelbase := 2.4
 var speed_kmh := 0.0
 var horn_t := 0.0
 var _visual: Node3D
+var model: VehicleModel          # Blender body (null for the old procedural defs)
 var ai_drive: Callable    # optional autopilot (harness drive test)
 
 func setup(d: Dictionary) -> void:
@@ -49,15 +50,24 @@ func setup(d: Dictionary) -> void:
 	physics_material_override = pm
 	_visual = Node3D.new()
 	add_child(_visual)
-	var mi := MeshInstance3D.new()
-	mi.mesh = d.mesh
-	_visual.add_child(mi)
+	model = d.get("model")
+	if model:
+		_visual.add_child(model)
+	else:
+		var mi := MeshInstance3D.new()
+		mi.mesh = d.mesh
+		_visual.add_child(mi)
 	var zs: Array[float] = []
 	for w in d.wheels:
-		var wm := MeshInstance3D.new()
-		wm.mesh = d.wheel_mesh
-		wm.scale = Vector3.ONE * (w.r / 0.3)
-		_visual.add_child(wm)
+		var wm: Node3D
+		if w.has("node"):
+			wm = w.node
+		else:
+			var wmi := MeshInstance3D.new()
+			wmi.mesh = d.wheel_mesh
+			wmi.scale = Vector3.ONE * (w.r / 0.3)
+			_visual.add_child(wmi)
+			wm = wmi
 		wheels.append({"mount": w.p, "radius": w.r, "steer": w.get("steer", false), "drive": w.get("drive", false), "rest": d.susp_rest,
 			"k": d.susp_k, "c": d.susp_c, "comp": 0.0, "mesh": wm, "spin": 0.0, "contact": false})
 		zs.append(w.p.z)
@@ -153,7 +163,7 @@ func _drive(dt: float) -> void:
 			w.comp = 0.0
 			if w.drive: w.spin += throttle * dt * 20.0
 		# visuals
-		var wm: MeshInstance3D = w.mesh
+		var wm: Node3D = w.mesh
 		wm.global_position = wheel_center
 		var yaw_off := steer_angle if w.steer else 0.0
 		wm.global_basis = global_basis * Basis(Vector3.UP, yaw_off) * Basis(Vector3.RIGHT, -w.spin)
@@ -174,3 +184,5 @@ func _drive(dt: float) -> void:
 	if not any_contact and up.y < 0.3 and linear_velocity.length() < 1.0:
 		apply_torque(up.cross(Vector3.UP) * mass * 6.0)
 	if Input.is_action_pressed("horn") and driver: horn_t = 0.3
+	if model:
+		model.set_param("brake", 1.0 if (brake > 0.1 and v_fwd > 0.5) or (throttle < 0.05 and speed_kmh < 1.0 and driver != null) else 0.0)

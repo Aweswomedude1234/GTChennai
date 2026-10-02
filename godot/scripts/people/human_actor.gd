@@ -9,7 +9,7 @@ static var _specs: Array = []
 static var _lib: AnimationLibrary
 static var _scenes := {}
 static var _mats := {}
-const LOOPS := ["walk", "walk_slow", "walk_brisk", "walk_alt", "run", "jog", "idle", "idle_alt", "talk", "argue", "drink_tea", "traffic_police"]
+const LOOPS := ["ride_bike", "ride_scooter", "ride_auto", "ride_pass", "ride_pillion", "walk", "walk_slow", "walk_brisk", "walk_alt", "run", "jog", "idle", "idle_alt", "talk", "argue", "drink_tea", "traffic_police"]
 # natural ground speed of each locomotion clip (m/s) for matching playback speed
 const CLIP_SPEED := {"walk_slow": 0.95, "walk": 1.35, "walk_brisk": 1.7, "jog": 3.0, "run": 4.8}
 
@@ -38,6 +38,19 @@ static func library() -> AnimationLibrary:
 			_lib.get_animation(a).loop_mode = Animation.LOOP_LINEAR if a in LOOPS else Animation.LOOP_NONE
 		n.free()
 	return _lib
+
+static var _rides := {}
+## seat a rider on a vehicle (riding clip + its hip point from assets/humans/rides.json)
+func ride(clip: String, x_off := 0.0) -> void:
+	if _rides.is_empty():
+		var d = CityPack.load_json("res://assets/humans/rides.json")
+		_rides = d if d else {}
+	var h: Array = _rides.get(clip, {"hips": [0, 1, 0]}).hips
+	position = Vector3(float(h[0]) + x_off, 0.0, float(h[2]))
+	rotation = Vector3.ZERO
+	action = clip
+	_play(clip, 0.0)
+	player.speed_scale = 1.0
 
 ## pick a body variant matching sex / age group / dress
 static func pick_spec(r: Rng, sex := "", child := false, dress := "") -> Dictionary:

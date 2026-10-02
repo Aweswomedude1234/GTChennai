@@ -175,3 +175,60 @@ static func car(seed: int) -> Dictionary:
 		"mesh": mb.to_mesh(_mat()), "wheel_mesh": wheel_mesh(Color(0.6, 0.6, 0.62), 0.3, 0.2),
 		"cam_height": 2.2, "cam_dist": 6.4, "head": Vector3(-0.35, 1.22, -0.1), "exit_left": false, "ang_damp": 0.5,
 	}
+
+## physics tuning per kind for the Blender models (VehicleModel); wheels, hull and visuals come from
+## the model itself. Masses/power from the real classes (auto 380 kg/7 kW, 110 cc bike, 1 t hatch,
+## 10 t city bus).
+static func tuning(kind: String) -> Dictionary:
+	match kind:
+		"auto": return {"kind": "auto", "name": "Bajrang RE (auto)", "mass": 380.0, "com": Vector3(0, 0.62, 0.22),
+			"susp_rest": 0.32, "susp_k": 9000.0, "susp_c": 650.0, "max_steer": 0.6, "steer_speed": 2.5,
+			"engine": 760.0, "top_speed": 15.5, "brake": 0.75, "grip": 1.05, "lat_stiff": 5.0, "roll_res": 1.4, "drag": 0.55,
+			"cam_height": 1.9, "cam_dist": 5.2, "head": Vector3(0, 1.35, -0.45), "ang_damp": 0.8}
+		"bike", "scooter": return {"kind": "bike", "name": "Vikram 110 (bike)" if kind == "bike" else "Sakhi 110 (scooter)", "mass": 190.0 if kind == "bike" else 160.0, "com": Vector3(0, 0.62, 0.05),
+			"susp_rest": 0.3, "susp_k": 7000.0, "susp_c": 420.0, "max_steer": 0.5, "steer_speed": 3.0,
+			"engine": 950.0 if kind == "bike" else 760.0, "top_speed": 25.0 if kind == "bike" else 21.0, "brake": 0.9, "grip": 1.15, "lat_stiff": 6.0, "roll_res": 1.0, "drag": 0.35,
+			"lean_kp": 60.0, "lean_kd": 9.0, "cam_height": 1.8, "cam_dist": 4.2, "head": Vector3(0, 1.55, 0.15), "ang_damp": 1.5}
+		"bus": return {"kind": "car", "name": "MNT city bus", "mass": 10500.0, "com": Vector3(0, 1.0, 0.3),
+			"susp_rest": 0.35, "susp_k": 260000.0, "susp_c": 26000.0, "max_steer": 0.5, "steer_speed": 1.2,
+			"engine": 42000.0, "top_speed": 19.0, "brake": 0.8, "grip": 1.0, "lat_stiff": 4.0, "roll_res": 1.2, "drag": 3.5,
+			"cam_height": 4.5, "cam_dist": 15.0, "head": Vector3(-0.8, 2.3, -5.3), "ang_damp": 0.8}
+		_: return {"kind": "car", "name": "Mithra (hatchback)", "mass": 980.0, "com": Vector3(0, 0.5, -0.1),
+			"susp_rest": 0.33, "susp_k": 26000.0, "susp_c": 2400.0, "max_steer": 0.55, "steer_speed": 2.2,
+			"engine": 4200.0, "top_speed": 42.0, "brake": 0.95, "grip": 1.1, "lat_stiff": 5.0, "roll_res": 1.2, "drag": 0.42,
+			"cam_height": 2.2, "cam_dist": 6.4, "head": Vector3(0.35, 1.22, -0.1), "ang_damp": 0.5}
+
+## full definition from a Blender model: hull from the model bounds, suspension mounts above the hubs
+## so that at static sag the wheels sit exactly where the modeller put them.
+static func from_model(kind: String, seed: int) -> Dictionary:
+	var d := tuning(kind)
+	var vm := VehicleModel.make(kind, seed)
+	d["model"] = vm
+	var aabb := AABB()
+	var first := true
+	for mi in vm.meshes:
+		if mi.name.begins_with("wheel_"): continue
+		var t := mi.transform
+		var par := mi.get_parent()
+		while par != null and par != vm:
+			t = (par as Node3D).transform * t
+			par = par.get_parent()
+		var bb := t * mi.get_aabb()
+		aabb = bb if first else aabb.merge(bb)
+		first = false
+	var ws := vm.wheel_info()
+	var drive_front := kind == "hatch"
+	var sag: float = d.mass * 9.81 / (maxf(1.0, ws.size()) * d.susp_k)
+	var wheels := []
+	var zmin := INF; var zmax := -INF
+	for w in ws: zmin = minf(zmin, w.p.z); zmax = maxf(zmax, w.p.z)
+	for w in ws:
+		var front: bool = w.p.z < (zmin + zmax) * 0.5
+		var p: Vector3 = w.p + Vector3(0, d.susp_rest - sag, 0)
+		wheels.append({"p": p, "r": w.r, "steer": front, "drive": front if drive_front else not front, "node": w.node})
+	d["wheels"] = wheels
+	var lo := aabb.position + Vector3(0, 0.25, 0)
+	var size := aabb.size - Vector3(0.04, 0.3, 0.04)
+	d["hull_size"] = size
+	d["hull_pos"] = lo + size * 0.5
+	return d

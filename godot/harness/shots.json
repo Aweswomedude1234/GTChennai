@@ -167,5 +167,52 @@
    "snap": true,
    "side": 0.5
   }
+ ],
+ "traffic": [
+  {
+   "name": "kutchery_traffic",
+   "cam": [
+    -96,
+    2.2,
+    -301,
+    0,
+    1.5,
+    0
+   ],
+   "hour": 10.0,
+   "snap": true,
+   "side": 0.6,
+   "min_rank": 3
+  },
+  {
+   "name": "santhome_traffic",
+   "cam": [
+    809,
+    2.0,
+    317,
+    0,
+    1.5,
+    0
+   ],
+   "hour": 18.2,
+   "snap": true,
+   "side": 0.7,
+   "min_rank": 3
+  },
+  {
+   "name": "rk_mutt_high",
+   "cam": [
+    -360,
+    9.0,
+    524,
+    0,
+    0,
+    0
+   ],
+   "hour": 11.0,
+   "snap": true,
+   "side": 0.9,
+   "min_rank": 3
+  }
  ]
 }

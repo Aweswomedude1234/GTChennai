@@ -67,9 +67,15 @@ func _run(shots: Array) -> void:
 		if w.crowd:
 			w.crowd.focus = cam.position
 			for k in 40: w.crowd.update(0.25, w.clock.hour)
+		if w.traffic:
+			w.traffic.focus = cam.position
+			w.traffic.clear()
+			w.traffic.populate(w.clock.hour)
+			for k in 30: w.traffic.update(0.2, w.clock.hour)
 		for i in int(s.get("settle", 12)): await get_tree().process_frame
 		var stats := _frame_stats()
 		stats["npcs"] = w.crowd.stats.agents if w.crowd else 0
+		stats["traffic"] = w.traffic.stats.agents if w.traffic else 0
 		await RenderingServer.frame_post_draw
 		var img := get_viewport().get_texture().get_image()
 		var path := out_dir.path_join(s.name + ".png")

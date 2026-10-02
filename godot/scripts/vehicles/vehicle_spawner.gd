@@ -4,11 +4,8 @@ extends RefCounted
 ## parked at the kerb of the nearest road. Phase 3 replaces this with the traffic system.
 
 static func make(kind: String, seed: int) -> Vehicle:
-	var d: Dictionary
-	match kind:
-		"auto": d = VehicleDefs.auto_rickshaw(seed)
-		"bike": d = VehicleDefs.bike(seed)
-		_: d = VehicleDefs.car(seed)
+	var k: String = {"car": "hatch"}.get(kind, kind)
+	var d: Dictionary = VehicleDefs.from_model(k, seed)
 	var v := Vehicle.new()
 	v.name = kind + "_%d" % seed
 	v.setup(d)
@@ -23,7 +20,7 @@ static func spawn_demo(game: Node, world: World, pos: Vector3) -> Array:
 	if not rr.is_empty():
 		base = rr.p; dir = rr.dir; w = rr.w
 	var side := Vector2(-dir.y, dir.x)
-	var kinds := ["auto", "bike", "car", "auto"]
+	var kinds := ["auto", "bike", "hatch", "scooter", "auto"]
 	for i in kinds.size():
 		var p := base + dir * (6.0 + i * 6.5) + side * (w * 0.5 - 1.1)
 		var v := make(kinds[i], 1000 + i * 77)

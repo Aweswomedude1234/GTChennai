@@ -52,7 +52,10 @@ func _spawn_player_at(pos: Vector3) -> void:
 
 func _process(_dt: float) -> void:
 	if harness: return
-	if player: world.set_focus(player.global_position)
+	if player:
+		world.set_focus(player.global_position)
+		var v: Node3D = player.get("vehicle")
+		world.obstacles = [v.global_position if v else player.global_position]
 	if Input.is_action_just_pressed("time_fwd"): world.clock.hour = fmod(world.clock.hour + 1.0, 24.0)
 	if Input.is_action_just_pressed("time_back"): world.clock.hour = fmod(world.clock.hour + 23.0, 24.0)
 	if Input.is_action_just_pressed("debug_toggle"): hud.visible = not hud.visible
