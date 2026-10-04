@@ -1,20 +1,20 @@
 {
-  "mada_street": {
+  "bazaar_night": {
     "adapter": "llvmpipe (LLVM 20.1.2, 256 bits)",
-    "chunk_gen_ms": 46.556,
-    "chunks_far": 93,
-    "chunks_near": 14,
-    "draw_calls": 1349,
+    "chunk_gen_ms": 4.642,
+    "chunks_far": 95,
+    "chunks_near": 11,
+    "draw_calls": 1124,
     "fps": 1.0,
-    "max_upload_ms": 2.05,
-    "npcs": 988,
-    "objects": 1655,
-    "primitives": 10911423,
-    "rss_mb": 4973.77734375,
-    "static_mem_mb": 264.353168487549,
-    "traffic": 144,
-    "video_mem_mb": 1446.29570007324,
-    "wait_frames": 218,
-    "wall_ms": 937983
+    "max_upload_ms": 7.013,
+    "npcs": 1500,
+    "objects": 1430,
+    "primitives": 11186384,
+    "rss_mb": 4833.17578125,
+    "static_mem_mb": 272.41180229187,
+    "traffic": 147,
+    "video_mem_mb": 1417.11264038086,
+    "wait_frames": 215,
+    "wall_ms": 1165890
   }
 }

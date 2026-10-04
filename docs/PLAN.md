@@ -40,9 +40,9 @@ Legend: [x] done · [~] partial · [ ] todo
 - [~] Pedestrian sim on footpaths and road edges, crossing with a raised hand, idle behaviours, schedules
 - [~] Traffic sim on the OSM graph: gap-seeking, two-wheeler filtering, junction turns, riders (horn audio, signals, jams todo)
 - [~] Vehicle fleet models (35+) with liveries and wear — 6 types / 15 variants, per-instance paint, dust and age
-- [ ] Animals: dogs, cows, crows, goats
+- [~] Animals: dogs, cows, goats (crows: sound only)
 - [~] Vendors and stalls with calls (stalls, umbrellas, vendors placed; calls todo)
-- [ ] Ambience audio layers, spatial audio, radio (2+ stations)
+- [~] Ambience audio layers, spatial audio (synthesised placeholders), radio (2+ stations) todo
 - [ ] Weather: rain, wet roads, waterlogging, monsoon, power cuts
 - [ ] Acceptance: 1,500+ visible people and jams at target fps
 
