@@ -36,6 +36,7 @@ var _cand: Array = []                # [road index, weight] of roads near the fo
 var _cand_w: Array = []
 var _cand_at := Vector3(1e9, 0, 1e9)
 var _t := 0.0
+var sound: Soundscape                # horns (set by World)
 var crowd: Crowd                     # far-tier riders are drawn by the crowd's VAT MultiMeshes
 var _mm := {}                        # kind → MultiMeshInstance3D (far tier, baked low-detail bodies)
 var _specs: Array = []
@@ -239,7 +240,9 @@ func _step_all(dt: float) -> void:
 			if ahead > 0.0 and ahead < 25.0 and absf(rel.dot(left)) < a.w * 0.5 + 1.0:
 				var g: float = ahead - a.len * 0.5 - 1.2
 				if g < gap: gap = g; v_lead = 0.0
-				if g < 10.0 and a.honk <= 0.0: a.honk = rng.range_f(1.5, 4.0)
+				if g < 10.0 and a.honk <= 0.0:
+					a.honk = rng.range_f(1.5, 4.0)
+					if sound and a.d < 150.0: sound.honk(a.kind, (a.xf as Transform3D).origin)
 		# slow for the junction at the end of the road (turning traffic, crossing streams)
 		var v0: float = a.v0
 		if to_end < 18.0: v0 = minf(v0, lerpf(4.0, a.v0, to_end / 18.0))
@@ -370,6 +373,8 @@ func _pose_node(a: Dictionary) -> void:
 		w.rotation = Vector3(-a.dist / r, steer if front else 0.0, 0.0)
 	vm.set_param("brake", a.brake)
 	vm.set_param("blink", a.blink)
+	var eng: AudioStreamPlayer3D = body.get_node_or_null("engine")
+	if eng: eng.pitch_scale = 0.75 + clampf(float(a.v) / float(KINDS[a.kind].v), 0.0, 1.2) * 0.8
 
 ## who rides: Chennai two-wheelers often carry a pillion (often a woman riding behind), autos carry
 ## up to three passengers; car and bus occupants are behind tinted glass (not drawn yet)
@@ -458,6 +463,7 @@ func _acquire(a: Dictionary) -> void:
 		for w in info:
 			w.node.set_meta("r", w.r)
 			w.node.set_meta("front", w.p.z < zmid)
+		body.add_child(Soundscape.engine_player(a.kind))
 		var cs := CollisionShape3D.new()
 		var box := BoxShape3D.new()
 		var K: Dictionary = KINDS[a.kind]
@@ -477,6 +483,8 @@ func _acquire(a: Dictionary) -> void:
 		vm.recolour(a.seed)
 	a.node = body
 	body.transform = a.xf
+	var eng: AudioStreamPlayer3D = body.get_node_or_null("engine")
+	if eng: eng.play(rng.next() * 1.5)
 	body.collision_layer = 1
 	var model: VehicleModel = body.get_meta("model")
 	for rd in a.riders:
@@ -500,6 +508,8 @@ func _release(a: Dictionary) -> void:
 	if body == null: return
 	body.visible = false
 	body.position = Vector3(0, -100, 0)
+	var eng: AudioStreamPlayer3D = body.get_node_or_null("engine")
+	if eng: eng.stop()
 	body.collision_layer = 0
 	for rd in a.riders:
 		var act: HumanActor = rd.actor

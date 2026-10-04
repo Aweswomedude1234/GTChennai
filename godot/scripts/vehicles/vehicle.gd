@@ -22,6 +22,8 @@ var speed_kmh := 0.0
 var horn_t := 0.0
 var _visual: Node3D
 var model: VehicleModel          # Blender body (null for the old procedural defs)
+var _engine: AudioStreamPlayer3D
+var _horn: AudioStreamPlayer3D
 var ai_drive: Callable    # optional autopilot (harness drive test)
 
 func setup(d: Dictionary) -> void:
@@ -53,6 +55,12 @@ func setup(d: Dictionary) -> void:
 	model = d.get("model")
 	if model:
 		_visual.add_child(model)
+		_engine = Soundscape.engine_player(model.kind)
+		add_child(_engine)
+		_horn = AudioStreamPlayer3D.new()
+		_horn.stream = Soundscape.stream(Soundscape.HORN.get(model.kind, "horn_car"))
+		_horn.unit_size = 10.0
+		add_child(_horn)
 	else:
 		var mi := MeshInstance3D.new()
 		mi.mesh = d.mesh
@@ -183,6 +191,14 @@ func _drive(dt: float) -> void:
 	# keep autos and cars from staying on their roof forever: self-right slowly when nearly stopped
 	if not any_contact and up.y < 0.3 and linear_velocity.length() < 1.0:
 		apply_torque(up.cross(Vector3.UP) * mass * 6.0)
-	if Input.is_action_pressed("horn") and driver: horn_t = 0.3
+	if Input.is_action_pressed("horn") and driver:
+		if horn_t <= 0.0 and _horn: _horn.play()
+		horn_t = 0.3
+	horn_t = maxf(0.0, horn_t - dt)
+	if _engine:
+		var on := driver != null or ai_drive.is_valid()
+		if on and not _engine.playing: _engine.play()
+		elif not on and _engine.playing: _engine.stop()
+		_engine.pitch_scale = 0.75 + clampf(absf(v_fwd) / float(def.top_speed), 0.0, 1.2) * 0.9 + throttle * 0.15
 	if model:
 		model.set_param("brake", 1.0 if (brake > 0.1 and v_fwd > 0.5) or (throttle < 0.05 and speed_kmh < 1.0 and driver != null) else 0.0)

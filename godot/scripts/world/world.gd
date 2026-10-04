@@ -67,6 +67,12 @@ func setup(city: String) -> void:
 		traffic.name = "Traffic"
 		add_child(traffic)
 		traffic.setup(pack, crowd)
+	if not Settings.has_arg("nosound"):
+		sound = Soundscape.new()
+		sound.name = "Soundscape"
+		add_child(sound)
+		sound.setup(self)
+		if traffic: traffic.sound = sound
 	print("[world] region built in %d ms (%d road verts, %d ground verts)" % [Time.get_ticks_msec() - t0, region.roads.count(), region.ground.count()])
 
 func _add_mesh(nm: String, mb: MB, mat: Material, shadows: bool) -> void:
@@ -116,6 +122,7 @@ var horizon_ready := false
 var crowd: Crowd
 var traffic: Traffic
 var animals: Animals
+var sound: Soundscape
 var obstacles: Array[Vector3] = []   # set by the game: player / player's vehicle
 
 func _process(dt: float) -> void:
