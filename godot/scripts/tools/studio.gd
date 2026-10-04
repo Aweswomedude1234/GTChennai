@@ -116,7 +116,7 @@ func _ready() -> void:
 			"riders":
 				node = Node3D.new()
 				var specs := HumanActor.specs()
-				var setups := [["bike", ["ride_bike", "ride_pillion"]], ["scooter", ["ride_scooter"]], ["auto", ["ride_auto", "ride_pass", "ride_pass"]]]
+				var setups := [["bike", ["ride_bike", "ride_pillion"]], ["cycle", ["ride_cycle"]], ["auto", ["ride_auto", "ride_pass", "ride_pass"]]]
 				for i in setups.size():
 					var vm := VehicleModel.make(setups[i][0], 21 + i)
 					vm.position = Vector3((i - 1) * 2.0, 0, 0)
@@ -133,10 +133,10 @@ func _ready() -> void:
 				node = Node3D.new()
 				var x := -9.0
 				var k := 0
-				for f in ["bus_0", "hatch_0", "hatch_2", "auto_0", "auto_1", "bike_0", "scooter_1"]:
+				for f in ["lorry_0", "minitruck_0", "hatch_2", "auto_0", "bike_0", "cycle_0"]:
 					k += 1
 					var inst: Node3D = VehicleModel.make(f.split("_")[0], 11 + k * 7)
-					var wdt := 2.6 if f.begins_with("bus") else (1.7 if f.begins_with("hatch") else (1.4 if f.begins_with("auto") else 0.8))
+					var wdt := 2.6 if f.begins_with("bus") or f.begins_with("lorry") else (1.7 if f.begins_with("hatch") or f.begins_with("mini") else (1.4 if f.begins_with("auto") else 0.8))
 					x += wdt * 0.5 + 0.4
 					inst.position = Vector3(x, 0, 0)
 					x += wdt * 0.5

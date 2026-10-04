@@ -775,7 +775,138 @@ def build_bus(variant=0):
     return body, wheels, dict(R=0.5, width=0.28, rim=0.3, style="alloy", spokes=10)
 
 
-BUILDERS = {"auto": (build_auto, 3), "hatch": (build_hatch, 4), "bike": (build_bike, 3), "scooter": (build_scooter, 3), "bus": (build_bus, 2)}
+# ============================================================================================ LORRY
+def build_lorry(variant=0):
+    """Tamil Nadu goods lorry (Leyland Comet class, fictional 'Kaveri'): 7.6 × 2.45 × 3.2 m, painted
+    cab, high steel-and-timber body with painted borders, often a tarpaulin over the load"""
+    pal = [("#e8731a", "#1f5ea8"), ("#d9a21a", "#b02a1a"), ("#2a7a3a", "#e8c21a"), ("#1f5ea8", "#e8731a")][variant % 4]
+    M = std_mats(*pal)
+    parts = []
+    # cab: rounded-nose bonnet cab (Leyland), lofted
+    def cab_ring(y, w, z0, z1, round_top=0.5):
+        return [Vector(p) for p in [(-w, y, z0), (-w, y, z1 - 0.15), (-w * 0.94, y, z1 - 0.03), (-w * 0.6, y, z1), (w * 0.6, y, z1), (w * 0.94, y, z1 - 0.03), (w, y, z1 - 0.15), (w, y, z0)]]
+    cab = loft("cab", [cab_ring(3.78, 0.95, 0.75, 1.4), cab_ring(3.7, 1.05, 0.72, 1.62), cab_ring(3.2, 1.12, 0.7, 1.72), cab_ring(3.0, 1.18, 0.7, 2.4), cab_ring(2.85, 1.2, 0.7, 2.75), cab_ring(1.9, 1.2, 0.7, 2.8), cab_ring(1.8, 1.2, 0.7, 2.78)], [M["paint"]])
+    subsurf(cab, 1); smooth(cab)
+    assign(cab, lambda c, n: "paint2" if 1.25 < c.z < 1.4 else None, M)
+    parts.append(cab)
+    # windscreen and door windows as decals
+    parts.append(decal(cab, [(-1.0, 1.95), (1.0, 1.95), (0.98, 2.6), (-0.98, 2.6)], "+y", "ws", M["glass"], 0.006, 4))
+    parts.append(decal(cab, [(0.6, 2.05), (0.2, 2.62), (-0.2, 2.62), (-0.6, 2.05)][::-1], "+y", "ws_bar", M["trim"], 0.008, 1))
+    for side in ("+x", "-x"):
+        pts = [(2.0, 1.85), (2.7, 1.85), (2.85, 2.55), (2.0, 2.55)]
+        parts.append(decal(cab, pts if side == "+x" else pts[::-1], side, "door_win", M["glass"], 0.006, 3))
+    # grille, bumper, lamps
+    parts.append(decal(cab, [(-0.55, 0.85), (0.55, 0.85), (0.55, 1.2), (-0.55, 1.2)][::-1], "+y", "grille", M["chrome"], 0.006, 3))
+    parts.append(rbox("bumper", (0, 3.82, 0.62), (1.18, 0.08, 0.1), [M["trim"]], 0.03))
+    for sx in (-1, 1):
+        parts.append(lamp("headlamp", (sx * 0.78, 3.72, 1.05), 0.11, 0.06, M, "lamp_head"))
+        parts.append(rbox("mirror", (sx * 1.38, 2.8, 2.3), (0.03, 0.12, 0.22), [M["trim"]], 0.02))
+        parts.append(tube("mirror_arm", [Vector((sx * 1.2, 2.85, 2.45)), Vector((sx * 1.38, 2.82, 2.48))], 0.015, [M["trim"]]))
+        parts.append(rbox("step", (sx * 1.22, 2.4, 0.55), (0.06, 0.3, 0.03), [M["metal"]], 0.01))
+    parts.append(rbox("dest", (0, 2.86, 2.88), (0.95, 0.05, 0.12), [M["paint2"]], 0.02))   # roof board (sign painting)
+    # chassis and load body: steel frame, timber planks, painted border bands
+    parts.append(rbox("chassis", (0, -0.6, 0.55), (0.45, 2.6, 0.08), [M["metal"]], 0.01))
+    parts.append(rbox("floor", (0, -1.25, 0.95), (1.22, 3.0, 0.08), [M["metal"]], 0.02))
+    for sx in (-1, 1):
+        parts.append(rbox("side", (sx * 1.2, -1.25, 1.75), (0.03, 3.0, 0.75), [M["paint"]], 0.01))
+        for z in (1.15, 2.35):
+            parts.append(rbox("band", (sx * 1.235, -1.25, z), (0.012, 3.0, 0.07), [M["paint2"]], 0.004))
+        for k in range(7):
+            parts.append(rbox("rib", (sx * 1.24, -4.15 + k * 0.97, 1.75), (0.025, 0.03, 0.76), [M["metal"]], 0.005))
+    parts.append(rbox("front_wall", (0, 1.72, 1.9), (1.2, 0.04, 0.95), [M["paint"]], 0.01))
+    parts.append(rbox("tailgate", (0, -4.24, 1.6), (1.2, 0.04, 0.6), [M["paint"]], 0.01))
+    parts.append(rbox("tg_band", (0, -4.28, 1.6), (1.18, 0.01, 0.08), [M["paint2"]], 0.004))
+    # tarpaulin hump over the load
+    tarp_rings = []
+    for k in range(9):
+        y = 1.6 - k * 0.72
+        hz = 2.5 + 0.35 * math.sin(math.pi * k / 8) + 0.08 * math.sin(k * 2.1)
+        tarp_rings.append([Vector((x * 1.16, y, 2.45 + (hz - 2.45) * (1 - x * x))) for x in [-1, -0.6, -0.2, 0.2, 0.6, 1]] + [Vector((x * 1.16, y, 2.43)) for x in [1, -1]])
+    tarp = loft("tarp", tarp_rings, [M["canvas"]]); smooth(tarp)
+    if variant % 2 == 0: parts.append(tarp)
+    else: bpy.data.objects.remove(tarp, do_unlink=True)
+    for sx in (-1, 1):
+        parts.append(rbox("tail", (sx * 1.0, -4.3, 0.85), (0.1, 0.02, 0.07), [M["lamp_tail"]], 0.01))
+        parts.append(rbox("mudflap", (sx * 0.95, -3.0, 0.4), (0.22, 0.01, 0.2), [M["rubber"]], 0.005))
+    parts.append(rbox("plate_r", (0, -4.3, 0.7), (0.26, 0.01, 0.07), [M["plate_y"]], 0.004))
+    parts.append(rbox("plate_f", (0, 3.9, 0.62), (0.26, 0.01, 0.07), [M["plate_y"]], 0.004))
+    parts.append(rbox("fuel", (1.0, 0.5, 0.6), (0.14, 0.4, 0.18), [M["metal"]], 0.06))
+    body = join(parts, "body")
+    wheels = [(-1.0, 2.6, 0.5), (1.0, 2.6, 0.5), (-1.0, -2.5, 0.5), (1.0, -2.5, 0.5)]
+    return body, wheels, dict(R=0.5, width=0.3, rim=0.28, style="alloy", spokes=8)
+
+
+# ====================================================================================== MINI TRUCK
+def build_minitruck(variant=0):
+    """cab-over mini truck (Tata Ace class, fictional 'Chinna Yaanai'): 3.8 × 1.5 × 1.85 m"""
+    pal = [("#f2f2f0", "#1a3a8a"), ("#e8e4d8", "#c62828"), ("#3a6aa8", "#f2f2f0")][variant % 3]
+    M = std_mats(*pal)
+    parts = []
+    def ring(y, w, z0, z1):
+        return [Vector(p) for p in [(-w, y, z0), (-w, y, z1 - 0.12), (-w * 0.9, y, z1), (w * 0.9, y, z1), (w, y, z1 - 0.12), (w, y, z0)]]
+    cab = loft("cab", [ring(1.88, 0.68, 0.45, 1.5), ring(1.84, 0.72, 0.42, 1.72), ring(1.7, 0.75, 0.4, 1.84), ring(1.0, 0.75, 0.4, 1.86), ring(0.95, 0.74, 0.4, 1.84)], [M["paint"]])
+    subsurf(cab, 1); smooth(cab)
+    parts.append(cab)
+    parts.append(decal(cab, [(-0.66, 1.1), (0.66, 1.1), (0.62, 1.68), (-0.62, 1.68)][::-1], "+y", "ws", M["glass"], 0.006, 4))
+    for side in ("+x", "-x"):
+        pts = [(1.15, 1.05), (1.7, 1.05), (1.72, 1.65), (1.15, 1.65)]
+        parts.append(decal(cab, pts if side == "+x" else pts[::-1], side, "win", M["glass"], 0.006, 3))
+    parts.append(decal(cab, [(-0.5, 0.62), (0.5, 0.62), (0.5, 0.8), (-0.5, 0.8)][::-1], "+y", "grille", M["paint2"], 0.006, 2))
+    for sx in (-1, 1):
+        parts.append(lamp("headlamp", (sx * 0.55, 1.86, 0.9), 0.07, 0.04, M, "lamp_head"))
+        parts.append(rbox("mirror", (sx * 0.82, 1.7, 1.35), (0.02, 0.06, 0.1), [M["trim"]], 0.01))
+    parts.append(rbox("bumper", (0, 1.9, 0.48), (0.72, 0.05, 0.07), [M["trim"]], 0.02))
+    parts.append(rbox("chassis", (0, -0.3, 0.42), (0.35, 1.3, 0.06), [M["metal"]], 0.01))
+    parts.append(rbox("bed", (0, -0.85, 0.66), (0.78, 1.1, 0.04), [M["metal"]], 0.01))
+    for sx in (-1, 1):
+        parts.append(rbox("side", (sx * 0.77, -0.85, 0.88), (0.02, 1.1, 0.2), [M["paint2"]], 0.005))
+    parts.append(rbox("tailgate", (0, -1.94, 0.88), (0.78, 0.02, 0.2), [M["paint2"]], 0.005))
+    parts.append(rbox("headboard", (0, 0.24, 1.15), (0.78, 0.02, 0.5), [M["metal"]], 0.005))
+    # a load: sacks / crates under a rope
+    if variant != 1:
+        for k in range(6):
+            parts.append(rbox("sack", (-0.4 + (k % 3) * 0.4, -0.5 - (k // 3) * 0.75, 0.86), (0.18, 0.32, 0.14), [M["canvas"] if k % 2 else M["seat"]], 0.06))
+    for sx in (-1, 1):
+        parts.append(rbox("tail", (sx * 0.65, -1.96, 0.7), (0.06, 0.02, 0.05), [M["lamp_tail"]], 0.01))
+    parts.append(rbox("plate_r", (0, -1.97, 0.55), (0.18, 0.01, 0.05), [M["plate_y"]], 0.004))
+    body = join(parts, "body")
+    wheels = [(-0.62, 1.35, 0.3), (0.62, 1.35, 0.3), (-0.62, -1.15, 0.3), (0.62, -1.15, 0.3)]
+    return body, wheels, dict(R=0.3, width=0.15, rim=0.17, style="steel", spokes=5)
+
+
+# ========================================================================================= BICYCLE
+def build_cycle(variant=0):
+    """roadster bicycle (Hercules/Atlas class, fictional 'Sooriyan'): 1.8 m, black, rear carrier"""
+    pal = [("#141414", "#c9c9c9"), ("#1a2a5a", "#c9c9c9"), ("#5a1a1a", "#c9c9c9")][variant % 3]
+    M = std_mats(*pal)
+    parts = []
+    head = Vector((0, 0.42, 0.95)); bb = Vector((0, -0.05, 0.3)); seat_t = Vector((0, -0.28, 0.92)); rear = Vector((0, -0.6, 0.34)); front = Vector((0, 0.6, 0.34))
+    for a, b in ((head, bb), (head, seat_t + Vector((0, 0.02, -0.04))), (seat_t, bb), (bb, rear), (seat_t, rear)):
+        parts.append(tube("frame", [a, b], 0.016, [M["paint"]], seg=8))
+    parts.append(tube("fork", [head, Vector((0, 0.55, 0.6)), front], 0.013, [M["paint"]], seg=6))
+    parts.append(tube("stem", [head, head + Vector((0, -0.02, 0.1))], 0.014, [M["chrome"]], seg=6))
+    hb = [Vector((-0.28, 0.32, 1.06)), Vector((-0.18, 0.4, 1.06)), Vector((0, 0.42, 1.05)), Vector((0.18, 0.4, 1.06)), Vector((0.28, 0.32, 1.06))]
+    parts.append(tube("handlebar", hb, 0.011, [M["chrome"]], seg=6))
+    for sx in (-1, 1): parts.append(tube("grip", [Vector((sx * 0.28, 0.32, 1.06)), Vector((sx * 0.3, 0.26, 1.06))], 0.016, [M["rubber"]], seg=6))
+    parts.append(rbox("saddle", (0, -0.3, 0.96), (0.09, 0.13, 0.03), [M["seat"]], 0.02))
+    parts.append(rbox("carrier", (0, -0.58, 0.72), (0.09, 0.2, 0.01), [M["chrome"]], 0.004))
+    for sx in (-0.07, 0.07): parts.append(tube("stay", [Vector((sx, -0.75, 0.71)), rear + Vector((sx, 0, 0))], 0.006, [M["chrome"]], seg=4))
+    for sx in (-1, 1):
+        crank = Vector((sx * 0.06, -0.05, 0.3))
+        parts.append(tube("crank", [crank, crank + Vector((0, 0.08 * sx, -0.14 * sx))], 0.008, [M["chrome"]], seg=4))
+        parts.append(rbox("pedal", (sx * 0.1, -0.05 + 0.08 * sx, 0.3 - 0.14 * sx), (0.04, 0.03, 0.01), [M["rubber"]], 0.005))
+    parts.append(lathe("chainring", [(-0.004, 0.0), (-0.004, 0.09), (0.004, 0.09), (0.004, 0.0)], [M["chrome"]], seg=20))
+    parts[-1].location = (0.05, -0.05, 0.3)
+    parts.append(rbox("chainguard", (0.05, -0.33, 0.33), (0.008, 0.3, 0.05), [M["paint"]], 0.01))
+    parts.append(lamp("headlamp", (0, 0.5, 0.92), 0.035, 0.03, M, "lamp_head"))
+    parts.append(rbox("stand", (0.06, -0.45, 0.17), (0.006, 0.006, 0.17), [M["chrome"]], 0.0))
+    body = join(parts, "body")
+    wheels = [(0, 0.6, 0.34), (0, -0.6, 0.34)]
+    return body, wheels, dict(R=0.34, width=0.04, rim=0.31, style="wire", spokes=5)
+
+
+BUILDERS = {"auto": (build_auto, 3), "hatch": (build_hatch, 4), "bike": (build_bike, 3), "scooter": (build_scooter, 3), "bus": (build_bus, 2),
+            "lorry": (build_lorry, 2), "minitruck": (build_minitruck, 2), "cycle": (build_cycle, 1)}
 
 
 def export(vid, variant):

@@ -6,13 +6,16 @@ extends Node3D
 ## lamp_* → lenses that light at night / when braking / blinking. Other materials (chrome, trim,
 ## rubber, seat …) keep their imported PBR values. Wheels are the `wheel_<i>` child nodes.
 
-const VARIANTS := {"auto": 3, "hatch": 4, "bike": 3, "scooter": 3, "bus": 2}
+const VARIANTS := {"auto": 3, "hatch": 4, "bike": 3, "scooter": 3, "bus": 2, "lorry": 2, "minitruck": 2, "cycle": 1}
 ## paint palettes (sRGB hex), weighted by repetition: what you actually see on Chennai roads
 const PALETTE := {
 	"auto": [["#f2b705", "#1f5e2e"], ["#f4c20d", "#1f5e2e"], ["#f0b400", "#173d24"], ["#efb50a", "#111111"], ["#f2b705", "#1f5e2e"], ["#e8b10a", "#1b4f8a"]],
 	"hatch": ["#f2f2f0", "#f2f2f0", "#f4f4f2", "#c8c8c8", "#b8b8ba", "#8a8a8a", "#7a1414", "#1c3a6a", "#2a2a2a", "#d8d0b8", "#3c5a3a", "#5e2a6e", "#9a2a1a", "#e8e4dc"],
 	"bike": ["#151515", "#151515", "#0d0d0d", "#8a1010", "#1a3a8a", "#5a5a5a", "#3a0a0a", "#c7c7c7", "#1d4a2a"],
 	"scooter": ["#f5f5f5", "#151515", "#8a1010", "#1a3a8a", "#7f8c8d", "#2e7d32", "#5e2a6e", "#c8a46a", "#d0d0d0"],
+	"lorry": [["#e8731a", "#1f5ea8"], ["#d9a21a", "#b02a1a"], ["#2a7a3a", "#e8c21a"], ["#1f5ea8", "#e8731a"], ["#b02a1a", "#e8c21a"]],
+	"minitruck": ["#f2f2f0", "#f2f2f0", "#e8e4d8", "#3a6aa8", "#c8c8c8"],
+	"cycle": ["#141414", "#141414", "#1a2a5a", "#5a1a1a", "#2a4a2a"],
 	"bus": [["#2a5db0", "#f2f0ea"], ["#2a5db0", "#f2f0ea"], ["#2f8a4a", "#f2f0ea"], ["#a52a2a", "#f2c811"], ["#1f3f8a", "#e8e4d8"]],
 }
 ## object-space height band painted with the second colour (auto-rickshaw green skirt)

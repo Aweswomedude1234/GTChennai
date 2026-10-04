@@ -27,6 +27,13 @@
    0.48
   ]
  },
+ "ride_cycle": {
+  "hips": [
+   0,
+   1.05,
+   0.3
+  ]
+ },
  "ride_pillion": {
   "hips": [
    0,

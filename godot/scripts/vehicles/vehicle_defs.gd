@@ -189,6 +189,14 @@ static func tuning(kind: String) -> Dictionary:
 			"susp_rest": 0.3, "susp_k": 7000.0, "susp_c": 420.0, "max_steer": 0.5, "steer_speed": 3.0,
 			"engine": 950.0 if kind == "bike" else 760.0, "top_speed": 25.0 if kind == "bike" else 21.0, "brake": 0.9, "grip": 1.15, "lat_stiff": 6.0, "roll_res": 1.0, "drag": 0.35,
 			"lean_kp": 60.0, "lean_kd": 9.0, "cam_height": 1.8, "cam_dist": 4.2, "head": Vector3(0, 1.55, 0.15), "ang_damp": 1.5}
+		"lorry": return {"kind": "car", "name": "Kaveri lorry", "mass": 7500.0, "com": Vector3(0, 1.0, 0.3),
+			"susp_rest": 0.35, "susp_k": 190000.0, "susp_c": 19000.0, "max_steer": 0.5, "steer_speed": 1.2,
+			"engine": 30000.0, "top_speed": 20.0, "brake": 0.8, "grip": 1.0, "lat_stiff": 4.0, "roll_res": 1.2, "drag": 3.0,
+			"cam_height": 4.2, "cam_dist": 13.0, "head": Vector3(0.6, 2.2, -2.6), "ang_damp": 0.8}
+		"minitruck": return {"kind": "car", "name": "Chinna Yaanai", "mass": 1100.0, "com": Vector3(0, 0.6, 0.0),
+			"susp_rest": 0.3, "susp_k": 30000.0, "susp_c": 2800.0, "max_steer": 0.55, "steer_speed": 2.0,
+			"engine": 3600.0, "top_speed": 22.0, "brake": 0.9, "grip": 1.05, "lat_stiff": 5.0, "roll_res": 1.2, "drag": 0.6,
+			"cam_height": 2.6, "cam_dist": 7.0, "head": Vector3(0.35, 1.45, -1.2), "ang_damp": 0.6}
 		"bus": return {"kind": "car", "name": "MNT city bus", "mass": 10500.0, "com": Vector3(0, 1.0, 0.3),
 			"susp_rest": 0.35, "susp_k": 260000.0, "susp_c": 26000.0, "max_steer": 0.5, "steer_speed": 1.2,
 			"engine": 42000.0, "top_speed": 19.0, "brake": 0.8, "grip": 1.0, "lat_stiff": 4.0, "roll_res": 1.2, "drag": 3.5,

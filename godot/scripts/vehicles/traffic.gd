@@ -17,8 +17,11 @@ const KINDS := {
 	"auto": {"len": 2.7, "w": 1.35, "v": 10.0, "a": 1.6, "b": 3.0, "T": 1.0, "weave": 0.6, "min_rank": 2},
 	"hatch": {"len": 3.8, "w": 1.7, "v": 14.0, "a": 1.8, "b": 3.5, "T": 1.2, "weave": 0.15, "min_rank": 2},
 	"bus": {"len": 12.0, "w": 2.6, "v": 11.0, "a": 0.9, "b": 2.5, "T": 1.5, "weave": 0.0, "min_rank": 3},
+	"lorry": {"len": 7.8, "w": 2.45, "v": 10.0, "a": 0.8, "b": 2.5, "T": 1.6, "weave": 0.0, "min_rank": 3},
+	"minitruck": {"len": 3.9, "w": 1.55, "v": 11.0, "a": 1.4, "b": 3.0, "T": 1.2, "weave": 0.2, "min_rank": 2},
+	"cycle": {"len": 1.8, "w": 0.6, "v": 4.2, "a": 0.8, "b": 2.5, "T": 0.9, "weave": 0.6, "min_rank": 1},
 }
-const MIX := {"bike": 34.0, "scooter": 22.0, "auto": 17.0, "hatch": 22.0, "bus": 5.0}
+const MIX := {"bike": 31.0, "scooter": 20.0, "auto": 16.0, "hatch": 20.0, "bus": 4.0, "lorry": 2.0, "minitruck": 4.0, "cycle": 5.0}
 const NEAR_R := 65.0                 # full bodies (+ skeletal riders, colliders) inside this range
 var MAX_NEAR := 40 if not Settings.has_arg("lowmem") else 5
 
@@ -354,7 +357,7 @@ func _pose(a: Dictionary, dt: float) -> void:
 	var yaw_rate := wrapf(a.yaw - prev_yaw, -PI, PI) / maxf(dt, 0.001)
 	a.yaw_rate = yaw_rate
 	var lean := 0.0
-	if a.kind in ["bike", "scooter"]:
+	if a.kind in ["bike", "scooter", "cycle"]:
 		lean = clampf(-yaw_rate * a.v / 9.81, -0.6, 0.6)
 	a.lean = lerpf(a.lean, lean, clampf(dt * 5.0, 0.0, 1.0))
 	a.xf = Transform3D(Basis.from_euler(Vector3(0, a.yaw, a.lean)), Vector3(p.x, RegionBuilder.ROAD_Y, p.y))
@@ -387,6 +390,23 @@ func _make_riders(kind: String, r: Rng) -> Array:
 		"scooter":
 			out.append(_rider("m" if r.next() < 0.55 else "f", "ride_scooter", 0.0, r))
 			if r.next() < 0.25: out.append(_rider("f" if r.next() < 0.5 else "m", "ride_pillion", 0.0, r))
+		"cycle":
+			out.append(_rider("m" if r.next() < 0.85 else "f", "ride_cycle", 0.0, r))
+		"bus":
+			# seated passengers by the windows and, of course, a couple hanging on the footboard
+			var hp: Array = _hips("ride_pass")
+			for k in 9:
+				for sx in [-0.8, 0.8]:
+					if r.next() < 0.55:
+						var rd := _rider("", "ride_pass", 0.0, r)
+						rd.vat = true
+						rd.off = Vector3(sx - float(hp[0]), 1.08 - float(hp[1]), (4.6 - k * 1.05) + 0.05 - float(hp[2]))
+						out.append(rd)
+			for k in int(r.next() * 3.0):
+				var rd := _rider("m", "idle", 0.0, r)
+				rd.vat = true
+				rd.off = Vector3(1.25 + k * 0.05, 0.42, -4.6 + k * 0.45)
+				out.append(rd)
 		"auto":
 			out.append(_rider("m", "ride_auto", 0.0, r))
 			var n := r.pick_w([3.0, 4.0, 3.0, 1.5])
@@ -405,7 +425,7 @@ func _rider(sex: String, clip: String, x: float, r: Rng) -> Dictionary:
 	var si: int = c[int(r.next() * c.size()) % c.size()] if not c.is_empty() else 0
 	var seed := r.range_i(1, 999999)
 	var app := HumanActor.appearance_for(_specs[si], Rng.new(seed))
-	return {"si": si, "clip": clip, "x": x, "seed": seed, "app": app, "actor": null}
+	return {"si": si, "clip": clip, "x": x, "seed": seed, "app": app, "actor": null, "vat": false, "off": Vector3.ZERO}
 
 ## tiers: the nearest MAX_NEAR within NEAR_R get pooled bodies with colliders and skeletal riders;
 ## the rest are low-detail MultiMesh bodies with VAT riders (drawn by the crowd)
@@ -422,6 +442,9 @@ func _render() -> void:
 		if near.has(a):
 			if a.node == null: _acquire(a)
 			_pose_node(a)
+			if crowd:
+				for rd in a.riders:
+					if rd.vat: extra.append([rd.si, (a.xf as Transform3D) * Transform3D(Basis(), _seat(rd)), rd.app, rd.clip])
 			continue
 		if a.node != null: _release(a)
 		var xf: Transform3D = a.xf
@@ -441,12 +464,16 @@ func _render() -> void:
 	stats["near"] = near.size()
 
 static var _rides := {}
-func _seat(rd: Dictionary) -> Vector3:
+func _hips(clip: String) -> Array:
 	if _rides.is_empty():
 		var d = CityPack.load_json("res://assets/humans/rides.json")
 		_rides = d if d else {}
-	var h: Array = _rides.get(rd.clip, {"hips": [0, 1, 0]}).hips
-	return Vector3(float(h[0]) + float(rd.x), 0.0, float(h[2]))
+	return _rides.get(clip, {"hips": [0, 0, 0]}).hips
+
+## where a rider's body origin sits in the vehicle frame
+func _seat(rd: Dictionary) -> Vector3:
+	var h: Array = _hips(rd.clip)
+	return Vector3(float(h[0]) + float(rd.x), 0.0, float(h[2])) + (rd.off as Vector3)
 
 func _acquire(a: Dictionary) -> void:
 	var pool: Array = pools.get(a.kind, [])
@@ -467,7 +494,7 @@ func _acquire(a: Dictionary) -> void:
 		var cs := CollisionShape3D.new()
 		var box := BoxShape3D.new()
 		var K: Dictionary = KINDS[a.kind]
-		var h := 3.0 if a.kind == "bus" else (1.6 if a.kind in ["auto", "hatch"] else 1.1)
+		var h := 3.0 if a.kind in ["bus", "lorry"] else (1.6 if a.kind in ["auto", "hatch", "minitruck"] else 1.1)
 		box.size = Vector3(K.w, h - 0.3, K.len)
 		cs.shape = box
 		cs.position = Vector3(0, 0.3 + (h - 0.3) * 0.5, 0)
@@ -488,6 +515,7 @@ func _acquire(a: Dictionary) -> void:
 	body.collision_layer = 1
 	var model: VehicleModel = body.get_meta("model")
 	for rd in a.riders:
+		if rd.vat: continue
 		var act: HumanActor = null
 		var pl: Array = _actor_pool.get(rd.si, [])
 		if pl.is_empty():
@@ -500,7 +528,7 @@ func _acquire(a: Dictionary) -> void:
 			model.add_child(act)
 			act.reshade(rd.app, rd.seed)
 		act.visible = true
-		act.ride(rd.clip, rd.x)
+		act.ride(rd.clip, rd.x, rd.off)
 		rd.actor = act
 
 func _release(a: Dictionary) -> void:

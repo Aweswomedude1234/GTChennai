@@ -5,8 +5,8 @@ extends Node3D
 ## who are blocked and, Chennai style, from everyone else too — and crows in the trees.
 ## Sounds come from tools/audio/gen.py (procedural placeholders, docs/PLACEHOLDERS.md).
 
-const HORN := {"bike": "horn_bike", "scooter": "horn_scooter", "auto": "horn_auto", "hatch": "horn_car", "bus": "horn_bus"}
-const ENGINE := {"bike": "engine_bike", "scooter": "engine_scooter", "auto": "engine_auto", "hatch": "engine_car", "bus": "engine_bus"}
+const HORN := {"bike": "horn_bike", "scooter": "horn_scooter", "auto": "horn_auto", "hatch": "horn_car", "bus": "horn_bus", "lorry": "horn_bus", "minitruck": "horn_car", "cycle": "horn_scooter"}
+const ENGINE := {"bike": "engine_bike", "scooter": "engine_scooter", "auto": "engine_auto", "hatch": "engine_car", "bus": "engine_bus", "lorry": "engine_bus", "minitruck": "engine_car", "cycle": ""}
 
 static var _streams := {}
 var world: World
@@ -54,6 +54,7 @@ func setup(w: World) -> void:
 func honk(kind: String, at: Vector3, pitch := 1.0) -> void:
 	var p := _horns[_next_horn]
 	_next_horn = (_next_horn + 1) % _horns.size()
+	if kind == "cycle": return
 	p.stream = stream(HORN.get(kind, "horn_car"))
 	p.global_position = at + Vector3(0, 1.0, 0)
 	p.pitch_scale = pitch * rng.range_f(0.94, 1.06)
@@ -64,6 +65,7 @@ func honk(kind: String, at: Vector3, pitch := 1.0) -> void:
 static func engine_player(kind: String) -> AudioStreamPlayer3D:
 	var p := AudioStreamPlayer3D.new()
 	p.name = "engine"
+	if ENGINE.get(kind, "x") == "": p.volume_db = -80.0; return p   # bicycles are silent (bell later)
 	p.stream = stream(ENGINE.get(kind, "engine_car"), true)
 	p.unit_size = 3.0 if kind in ["bike", "scooter"] else (4.0 if kind == "auto" else 5.0)
 	p.max_distance = 70.0

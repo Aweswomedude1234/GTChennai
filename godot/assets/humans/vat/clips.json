@@ -40,6 +40,10 @@
   "ride_pillion": {
    "row": 247,
    "frames": 1
+  },
+  "ride_cycle": {
+   "row": 248,
+   "frames": 1
   }
  }
 }
