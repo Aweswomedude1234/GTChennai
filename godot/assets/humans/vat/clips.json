@@ -20,6 +20,26 @@
   "drink_tea": {
    "row": 183,
    "frames": 60
+  },
+  "ride_bike": {
+   "row": 243,
+   "frames": 1
+  },
+  "ride_scooter": {
+   "row": 244,
+   "frames": 1
+  },
+  "ride_auto": {
+   "row": 245,
+   "frames": 1
+  },
+  "ride_pass": {
+   "row": 246,
+   "frames": 1
+  },
+  "ride_pillion": {
+   "row": 247,
+   "frames": 1
   }
  }
 }

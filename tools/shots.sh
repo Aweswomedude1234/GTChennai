@@ -8,6 +8,6 @@ SET="$1"; shift || true
 RES="1600x900"; EXTRA=()
 for a in "$@"; do case "$a" in --res=*) RES="${a#--res=}";; *) EXTRA+=("$a");; esac; done
 if [ "$(uname)" = "Linux" ] && [ -z "$DISPLAY" ]; then
-  exec xvfb-run -a -s "-screen 0 ${RES}x24" "$ROOT/tools/godot.sh" --resolution "$RES" -- --shot="$SET" "${EXTRA[@]}"
+  exec xvfb-run -a -s "-screen 0 ${RES}x24" "$ROOT/tools/godot.sh" --resolution "$RES" -- --shot="$SET" --lowmem "${EXTRA[@]}"
 fi
 exec "$ROOT/tools/godot.sh" --resolution "$RES" -- --shot="$SET" "${EXTRA[@]}"

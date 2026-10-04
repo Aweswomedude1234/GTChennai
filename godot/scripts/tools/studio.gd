@@ -63,12 +63,13 @@ func _ready() -> void:
 				node = Node3D.new()
 				var clips := ["walk", "talk", "drink_tea", "idle", "traffic_police", "argue", "jog", "idle_alt"]
 				var specs := HumanActor.specs()
-				for i in 8:
+				var n_act := int(Settings.arg("actors_n", "8"))
+				for i in n_act:
 					var a := HumanActor.new()
 					node.add_child(a)
 					a.build(specs[(i * 3) % specs.size()], null, 50 + i)
 					a.position = Vector3((i % 4 - 1.5) * 1.1, 0, (i / 4) * 1.6 - 0.8)
-					a.player.play(clips[i])
+					a.player.play(clips[i % clips.size()])
 					a.player.seek(1.0 + i * 0.37, true)
 				size = 2.6
 			"faces":
@@ -127,7 +128,10 @@ func _ready() -> void:
 					var wm := MeshInstance3D.new(); wm.mesh = d.wheel_mesh; wm.scale = Vector3.ONE * (w.r / 0.3)
 					wm.position = Vector3(w.p.x, w.r, w.p.z); node.add_child(wm)
 				size = 4.5 if s == "car" else 3.2
+		print("[studio] before ", s, " rss ", Harness.rss_mb())
 		add_child(node)
+		for i in 6: await get_tree().process_frame
+		print("[studio] after ", s, " rss ", Harness.rss_mb())
 		var imgs: Array[Image] = []
 		for ang in ([-0.25, 0.0, 0.5] if s == "faces" else [-0.6, 0.6, 2.6]):
 			var dir := Vector3(sin(ang), 0.35 if s != "faces" else 0.05, cos(ang) * (-1.0 if s in ["faces", "actors"] else 1.0)).normalized()

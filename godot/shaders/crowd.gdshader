@@ -5,7 +5,7 @@ render_mode blend_mix, depth_draw_opaque, cull_back, diffuse_burley;
 // tools/humans/bake_vat.py). One MultiMesh per body variant; per-instance data:
 //   COLOR            = top garment colour (rgb), a = skin tone index / 8
 //   INSTANCE_CUSTOM  = (clip row * 1000 + clip frames, phase in frames, playback speed, lower colour packed 0xRRGGBB)
-// UV2.x = vertex column in the VAT, UV2.y = part (0 skin, 1 top, 2 lower, 3 drape, 4 hair, 5 extra, 6 eyes).
+// UV2.x = vertex column in the VAT, UV2.y = part (0 skin, 1 top, 2 lower, 3 drape, 4 hair, 5 extra, 6 eyes, 7 shoes).
 uniform sampler2D vat_pos : filter_nearest, repeat_disable;
 uniform sampler2D vat_nrm : filter_nearest, repeat_disable;
 uniform float vat_range = 1.0;
@@ -61,6 +61,7 @@ void fragment() {
 	}
 	else if (part == 4) { c = mix(vec3(0.018, 0.014, 0.011), vec3(0.45), grey_hair); rough = 0.45; }
 	else if (part == 5) { c = vec3(0.85, 0.83, 0.76); }
+	else if (part == 7) { c = vec3(0.05, 0.035, 0.025); rough = 0.4; }   // shoes
 	else { c = vec3(0.8, 0.78, 0.74); rough = 0.2; }
 	ALBEDO = c * mix(1.0, 0.85, wet);
 	ROUGHNESS = rough;

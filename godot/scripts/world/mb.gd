@@ -125,6 +125,22 @@ func tube(a: Vector3, b: Vector3, r: float, seg: int, color: Color, p0: Vector4,
 	_fix_last_tris(base, seg * 6)
 
 ## a sagging cable (catenary approximation) as a thin tube polyline
+## low-poly UV sphere (fruit, coconuts, heaps); `squash` scales y
+func ball(c: Vector3, r: float, color: Color, p0: Vector4, seg := 6, rings := 4, squash := 1.0) -> void:
+	var base := v.size()
+	for j in rings + 1:
+		var th := PI * float(j) / rings
+		for i in seg + 1:
+			var ph := TAU * float(i) / seg
+			var d := Vector3(sin(th) * cos(ph), cos(th), sin(th) * sin(ph))
+			vert(c + Vector3(d.x * r, d.y * r * squash, d.z * r), d, color, Vector2(float(i) / seg, float(j) / rings), p0)
+	for j in rings:
+		for i in seg:
+			var a := base + j * (seg + 1) + i
+			var b := a + seg + 1
+			idx.append_array([a, a + 1, b, a + 1, b + 1, b])
+	_fix_last_tris(base, rings * seg * 6)
+
 func cable(a: Vector3, b: Vector3, sag: float, r: float, color: Color, p0: Vector4, segs := 8) -> void:
 	var prev := a
 	for i in range(1, segs + 1):

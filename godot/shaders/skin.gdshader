@@ -10,6 +10,9 @@ uniform float male = 1.0;
 uniform float sweat = 0.4;
 uniform sampler2D masks : hint_default_black, filter_linear_mipmap;   // r lips, g eyelids, b nails, a face
 uniform sampler2D noise : hint_default_white, filter_linear_mipmap, repeat_enable;
+uniform bool use_tex = false;
+uniform sampler2D tex : source_color, hint_default_white, filter_linear_mipmap_anisotropic;
+uniform vec3 tex_mean = vec3(0.3, 0.2, 0.14);     // mean torso colour of that texture (linear)
 
 void fragment() {
 	vec4 m = texture(masks, UV);
@@ -22,6 +25,14 @@ void fragment() {
 	c = mix(c, vec3(0.75, 0.6, 0.55) * (tone * 0.6 + 0.4), m.b * 0.8);
 	// age: uneven tone and dryness
 	c *= 1.0 - age * 0.08 * n1.g;
+	if (use_tex) {
+		// photo texture relative to its own mean, applied to our tone: keeps pores, creases, lips,
+		// palms, stubble and scalp shading while the tone stays per person
+		vec3 t = texture(tex, UV).rgb;
+		vec3 rel = t / max(tex_mean, vec3(0.01));
+		c = tone * clamp(rel, vec3(0.08), vec3(2.6));
+		c = mix(c, c * vec3(1.0, 0.86, 0.86), m.r * 0.3);
+	}
 	ALBEDO = c;
 	float pore = n2.a;
 	ROUGHNESS = mix(0.55, 0.38, sweat * (hour > 10.0 && hour < 17.0 ? 1.0 : 0.6)) + pore * 0.08 - m.r * 0.15;

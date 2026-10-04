@@ -90,6 +90,7 @@ def mat(name, rgb):
     m.use_nodes = True
     bsdf = m.node_tree.nodes.get("Principled BSDF")
     if bsdf: bsdf.inputs["Base Color"].default_value = (*rgb, 1.0)
+    m.use_fake_user = True   # MPFB purges orphan materials when it loads assets
     return m
 
 
@@ -173,6 +174,116 @@ def parent_to_rig(ob, rig, src):
     mod.object = rig
 
 
+
+# ------------------------------------------------------------------------ MakeHuman system assets
+# CC0 MakeHuman system assets (skins, hair, eyebrows, eyelashes, clothes, shoes) installed into
+# MPFB's user data dir (docs/CREDITS.md). Textures are exported once to godot/assets/humans/tex/;
+# the game re-tints them per person (skin tone, hair colour, garment colour).
+MH_DIR = os.environ.get("MH_ASSETS", os.path.expanduser("~/.config/blender/5.2/extensions/.user/user_default/mpfb/data"))
+TEX_OUT = os.path.join(OUT, "tex")
+
+
+def _srgb_to_lin(c):
+    return [float(x / 12.92 if x <= 0.04045 else ((x + 0.055) / 1.055) ** 2.4) for x in c]
+
+
+def export_tex(src, size, alpha, region=None):
+    """downscale src into TEX_OUT (png with alpha, else jpg); returns (file name, linear mean colour,
+    mean luminance) of the non-background / opaque pixels (optionally inside a uv region)"""
+    import numpy as np
+    from PIL import Image
+    os.makedirs(TEX_OUT, exist_ok=True)
+    stem = os.path.splitext(os.path.basename(src))[0]
+    name = stem + (".png" if alpha else ".jpg")
+    dst = os.path.join(TEX_OUT, name)
+    im = Image.open(src).convert("RGBA")
+    px = np.asarray(im, dtype=np.float32) / 255.0          # top-left origin
+    h, w = px.shape[:2]
+    if region:   # region in uv (bottom-left origin)
+        x0, y0, x1, y1 = region
+        px = px[int((1 - y1) * h):int((1 - y0) * h), int(x0 * w):int(x1 * w)]
+    flat = px.reshape(-1, 4)
+    if alpha:
+        sel = flat[flat[:, 3] > 0.5]
+    else:
+        bg = np.asarray(im, dtype=np.float32)[0, 0, :3] / 255.0
+        sel = flat[np.abs(flat[:, :3] - bg).sum(1) > 0.03]
+    if len(sel) == 0: sel = flat
+    mean = _srgb_to_lin(list(np.median(sel[:, :3], axis=0)))
+    lum = float(np.mean(sel[:, :3] @ np.array([0.3, 0.55, 0.15])))
+    if not os.path.exists(dst):
+        out = im if max(w, h) <= size else im.resize((size, size), Image.LANCZOS)
+        if alpha: out.save(dst, optimize=True)
+        else: out.convert("RGB").save(dst, quality=88)
+    return name, [round(x, 4) for x in mean], round(lum, 4)
+
+
+def mh_asset(body, rel, typ, role, material):
+    """fit + rig a MakeHuman asset to the body; returns (object, diffuse path, normal path)"""
+    path = os.path.join(MH_DIR, rel)
+    if not os.path.exists(path):
+        print("   missing asset", rel); return None, None, None
+    o = HumanService.add_mhclo_asset(path, body, asset_type=typ, subdiv_levels=0, material_type="MAKESKIN")
+    diffuse = normal = None
+    for m in o.data.materials:
+        if m and m.node_tree:
+            for n in m.node_tree.nodes:
+                if n.type == "TEX_IMAGE" and n.image:
+                    fp = bpy.path.abspath(n.image.filepath)
+                    if "_normal" in fp: normal = fp
+                    elif "_ao" in fp: continue
+                    elif diffuse is None: diffuse = fp
+    o.data.materials.clear(); o.data.materials.append(material)
+    o.name = role
+    return o, diffuse, normal
+
+
+def skin_file(spec, r):
+    age = float(spec["macro"]["age"])
+    bucket = "young" if age < 0.62 else ("middleage" if age < 0.82 else "old")
+    dark = float(spec["macro"]["race"].get("african", 0.4)) >= 0.4 or r.random() < 0.6
+    d = os.path.join(MH_DIR, "skins", f"{bucket}_{'african' if dark else 'asian'}_{'male' if spec['sex'] == 'm' else 'female'}")
+    for line in open(os.path.join(d, os.path.basename(d) + ".mhmat")):
+        if line.startswith("diffuseTexture"):
+            return os.path.join(d, line.split()[1])
+    return None
+
+
+def split_by_height(o, z_split, mats):
+    """separate a two-piece outfit into 'top' and 'lower' objects by connected component height"""
+    me = o.data
+    o.data.materials.clear()
+    for m in mats: me.materials.append(m)
+    bm = bmesh.new(); bm.from_mesh(me)
+    bm.verts.ensure_lookup_table()
+    seen = set()
+    for v0 in bm.verts:
+        if v0.index in seen: continue
+        comp = []; stack = [v0]; seen.add(v0.index)
+        while stack:
+            v = stack.pop(); comp.append(v)
+            for e in v.link_edges:
+                w = e.other_vert(v)
+                if w.index not in seen: seen.add(w.index); stack.append(w)
+        mz = sum(v.co.z for v in comp) / len(comp)
+        idx = 0 if mz > z_split else 1
+        for v in comp:
+            for f in v.link_faces: f.material_index = idx
+    bm.to_mesh(me); bm.free()
+    bpy.ops.object.select_all(action="DESELECT"); o.select_set(True); bpy.context.view_layer.objects.active = o
+    bpy.ops.mesh.separate(type="MATERIAL")
+    parts = [ob for ob in bpy.context.selected_objects]
+    for ob in parts:
+        ob.name = ob.data.materials[0].name if len(ob.data.materials) == 1 else ob.name
+        # drop now-unused slots
+        used = {p.material_index for p in ob.data.polygons}
+        if len(used) == 1 and len(ob.data.materials) > 1:
+            keep = ob.data.materials[list(used)[0]]
+            ob.data.materials.clear(); ob.data.materials.append(keep)
+            for p in ob.data.polygons: p.material_index = 0
+            ob.name = keep.name
+    return parts
+
 # ------------------------------------------------------------------------------------------- build
 def build(spec):
     t0 = time.time()
@@ -197,11 +308,52 @@ def build(spec):
     rig.name = "rig"
 
     M = {k: mat(k, c) for k, c in (("skin", (0.45, 0.3, 0.2)), ("eyes", (0.9, 0.9, 0.9)), ("teeth", (0.9, 0.88, 0.8)), ("lashes", (0.02, 0.02, 0.02)),
-                                   ("hair", (0.02, 0.015, 0.01)), ("top", (0.8, 0.8, 0.8)), ("lower", (0.2, 0.2, 0.3)), ("drape", (0.7, 0.2, 0.3)), ("extra", (0.9, 0.9, 0.85)))}
+                                   ("hair", (0.02, 0.015, 0.01)), ("top", (0.8, 0.8, 0.8)), ("lower", (0.2, 0.2, 0.3)), ("drape", (0.7, 0.2, 0.3)), ("extra", (0.9, 0.9, 0.85)), ("shoes", (0.2, 0.15, 0.1)))}
     zs = [v.co.z for v in body.data.vertices]
     height = max(zs) - min(zs)
     body_vs = verts_in_group(body, "body", 0.5)
     hips_z = rig.data.bones["Hips"].head_local.z if "Hips" in rig.data.bones else height * 0.53
+    # ------------------------------------------------ MakeHuman CC0 assets: skin photo, hair, brows, lashes, outfits
+    tex = spec["tex"] = {}
+    mh_parts = []
+    sf = skin_file(spec, r)
+    if sf:
+        name, mean, _ = export_tex(sf, 2048, False, region=(0.12, 0.42, 0.3, 0.72))
+        tex["body"] = {"file": name, "mean": mean}
+    def add(rel, typ, role, mat_, alpha, size=1024):
+        o, dif, nrm = mh_asset(body, rel, typ, role, mat_)
+        if o is None: return None
+        if dif:
+            name, mean, lum = export_tex(dif, size, alpha)
+            tex[role] = {"file": name, "mean": mean, "lum": lum}
+            if nrm: tex[role]["normal"] = export_tex(nrm, size, False)[0]
+        mh_parts.append(o)
+        return o
+    sex, age, dress = spec["sex"], float(spec["macro"]["age"]), spec["dress"]
+    kid = spec["id"].startswith("child")
+    hair_style = spec.get("hair", "short")
+    mh_hair = None
+    if sex == "m" and hair_style == "short": mh_hair = r.choice(["short01", "short02", "short02", "short04", "short04"])
+    elif hair_style == "plait": mh_hair = "braid01"
+    if mh_hair: add(f"hair/{mh_hair}/{mh_hair}.mhclo", "Hair", "hair", M["hair"], True)
+    brow = r.choice(["eyebrow001", "eyebrow002", "eyebrow003", "eyebrow004", "eyebrow005", "eyebrow006"] if sex == "m" else ["eyebrow007", "eyebrow008", "eyebrow009", "eyebrow010", "eyebrow011", "eyebrow012"])
+    add(f"eyebrows/{brow}/{brow}.mhclo", "Eyebrows", "brows", M["hair"], True, 512)
+    lash = r.choice(["eyelashes01", "eyelashes04"] if sex == "m" else ["eyelashes02", "eyelashes03"])
+    add(f"eyelashes/{lash}/{lash}.mhclo", "Eyelashes", "lashes", M["lashes"], True, 256)
+    mh_suit = None
+    if dress == "shirt_pants": mh_suit = r.choice(["male_casualsuit01", "male_casualsuit03", "male_casualsuit03"])
+    elif dress == "tshirt_pants": mh_suit = r.choice(["male_casualsuit06", "male_casualsuit02", "male_casualsuit04"])
+    if mh_suit:
+        suit = add(f"clothes/{mh_suit}/{mh_suit}.mhclo", "Clothes", "suit", M["top"], False)
+        if suit:
+            mh_parts.remove(suit)
+            parts = split_by_height(suit, hips_z + 0.02, [M["top"], M["lower"]])
+            mh_parts += parts
+            tex["top"] = tex["lower"] = tex.pop("suit")
+    if dress in ("shirt_pants", "tshirt_pants") or kid:
+        if r.random() < (0.7 if not kid else 1.0):
+            shoe = r.choice(["shoes01", "shoes04", "shoes06"] if not kid else ["shoes04"])
+            add(f"clothes/{shoe}/{shoe}.mhclo", "Clothes", "shoes", M["shoes"], False, 512)
     # ------------------------------------------------ garments
     dress = spec["dress"]
     upper_bones = ["LowerBack", "Spine", "Spine1", "LeftShoulder", "RightShoulder", "LeftArm", "RightArm", "Neck", "Hips"]
@@ -235,7 +387,7 @@ def build(spec):
             if b in ("LeftShoulder", "RightShoulder", "LowerBack", "Spine", "Spine1", "Neck", "Hips", "LHipJoint", "RHipJoint", "LeftUpLeg", "RightUpLeg", ""):
                 keep.add(i)
         return keep
-    if dress in ("shirt_pants", "shirt_veshti", "shirt_lungi", "tshirt_pants", "uniform_shorts", "uniform_skirt", "churidar", "nighty"):
+    if dress in ("shirt_pants", "shirt_veshti", "shirt_lungi", "tshirt_pants", "uniform_shorts", "uniform_skirt", "churidar", "nighty") and not mh_suit:
         hem = hips_z - (0.12 if dress in ("shirt_pants", "tshirt_pants") else 0.18) * (height / 1.75)
         if dress == "churidar": hem = hips_z - 0.42 * (height / 1.75)          # kurta to the knee
         if dress == "nighty": hem = 0.12
@@ -246,7 +398,7 @@ def build(spec):
     # lower garments from helpers
     tights = verts_in_group(body, "helper-tights", 0.5)
     skirt = verts_in_group(body, "helper-skirt", 0.5)
-    if dress in ("shirt_pants", "tshirt_pants", "churidar", "uniform_shorts"):
+    if dress in ("shirt_pants", "tshirt_pants", "churidar", "uniform_shorts") and not mh_suit:
         # trousers only up to the waistband, tucked just under the shirt hem (no poke-through)
         waist = hips_z + 0.06 * (height / 1.75)
         keep = {i for i in tights if body.data.vertices[i].co.z < waist}
@@ -309,7 +461,7 @@ def build(spec):
             thr = max(thr, lid_top + 0.012 + (0.02 if f < 0.4 else 0.0))
         return co.z > thr
     hair_vs = {i for i in head_vs if is_scalp(body.data.vertices[i].co)}
-    if hair_vs and spec.get("hair") != "bald":
+    if hair_vs and spec.get("hair") != "bald" and not mh_hair:
         hair = extract(body, hair_vs, "hair", 0.005, M["hair"])
         # volume: thicker on the crown than at the hairline (short men's cut ~1.5 cm, women's ~2.5 cm)
         vol = 0.016 if spec["sex"] == "m" else 0.024
@@ -331,7 +483,7 @@ def build(spec):
         dv = [body.data.vertices[i].co for i in lids]
         lid_top = max(c.z for c in dv); lid_y = min(c.y for c in dv); eye_x = max(abs(c.x) for c in dv)
         brow = {i for i in head_vs if lid_top + 0.004 < body.data.vertices[i].co.z < lid_top + 0.016 and 0.008 < abs(body.data.vertices[i].co.x) < eye_x + 0.006 and body.data.vertices[i].co.y < lid_y + 0.012}
-        if brow: garments.append(extract(body, brow, "brows", 0.0015 if spec["sex"] == "f" else 0.0025, M["hair"]))
+        if brow and "brows" not in tex: garments.append(extract(body, brow, "brows", 0.0015 if spec["sex"] == "f" else 0.0025, M["hair"]))
         if spec["sex"] == "m" and float(spec["macro"]["age"]) > 0.3 and r.random() < 0.7:
             stache = {i for i in head_vs if lip_top + 0.001 < body.data.vertices[i].co.z < lip_top + 0.017 and abs(body.data.vertices[i].co.x) < lip_w + 0.008 and body.data.vertices[i].co.y < lip_y + 0.012}
             if stache: garments.append(extract(body, stache, "moustache", 0.003, M["hair"]))
@@ -342,7 +494,12 @@ def build(spec):
     lashes = set().union(*(verts_in_group(body, g, 0.5) for g in keep_helpers[2:6]))
     teeth = set().union(*(verts_in_group(body, g, 0.5) for g in keep_helpers[6:]))
     for name, vs, m in (("eyes", eyes, M["eyes"]), ("lashes", lashes, M["lashes"]), ("teeth", teeth, M["teeth"])):
+        if name == "lashes" and "lashes" in tex: continue
         if vs: garments.append(extract(body, vs, name, 0.0, m))
+    # body skin hidden under MakeHuman clothes/shoes is removed (no poke-through, fewer verts)
+    for vg in body.vertex_groups:
+        if vg.name.startswith("Delete."):
+            body_vs -= verts_in_group(body, vg.name, 0.5)
     me = body.data
     bm = bmesh.new(); bm.from_mesh(me); bm.verts.ensure_lookup_table()
     bmesh.ops.delete(bm, geom=[v for v in bm.verts if v.index not in body_vs], context="VERTS")
@@ -350,6 +507,7 @@ def build(spec):
     me.materials.clear(); me.materials.append(M["skin"])
     body.name = "body"
     for g in garments: parent_to_rig(g, rig, body)
+    garments += mh_parts
     # strip non-deform groups so the exporter only writes bone weights
     bone_names = set(rig.data.bones.keys())
     for ob in [body] + garments:
@@ -457,7 +615,12 @@ if __name__ == "__main__":
         json.dump(make_specs(), open(SPECS, "w"), indent=1)
     specs = json.load(open(SPECS))
     os.makedirs(OUT, exist_ok=True)
-    json.dump(specs, open(os.path.join(OUT, "bodies.json"), "w"), indent=1)  # the game reads variants from here
+    gpath = os.path.join(OUT, "bodies.json")   # the game reads variants (and their texture info) from here
+    built = {b["id"]: b for b in json.load(open(gpath))} if os.path.exists(gpath) else {}
     for s in specs:
-        if a.only and s["id"] not in a.only.split(","): continue
+        if a.only and s["id"] not in a.only.split(","):
+            s.update({k: v for k, v in built.get(s["id"], {}).items() if k == "tex"})
+            continue
         build(s)
+        json.dump(specs, open(gpath, "w"), indent=1)
+    json.dump(specs, open(gpath, "w"), indent=1)

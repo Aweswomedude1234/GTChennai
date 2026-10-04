@@ -18,6 +18,7 @@ From https://github.com/google/fonts: Baloo Thambi 2, Arima, Catamaran, Noto San
 
 ## Humans and animation
 - **MPFB2 / MakeHuman** (https://github.com/makehumancommunity/mpfb2): base mesh, targets, rigs and weights, region masks — assets **CC0 1.0** (LICENSE.ASSETS.md). The MPFB add-on code (GPL-3.0) is used only as an offline tool; none of its code ships in the game. Bodies in `godot/assets/humans/*.glb` are derived from the CC0 assets.
+- **MakeHuman system assets** (https://files2.makehumancommunity.org/asset_packs/makehuman_system_assets/makehuman_system_assets_cc0.zip, downloaded 2026-10-02 with the owner's approval): skins, hair (short01–04, braid01), eyebrows, eyelashes, clothes (male_casualsuit01/02/03/04/06) and shoes (shoes01/04/06) — **CC0 1.0** (released by Data Collection AB, Joel Palmius, Jonas Hauquier, 2020). Re-fitted per body by MPFB; downscaled textures in `godot/assets/humans/tex/`.
 - **CMU Graphics Lab Motion Capture Database** (http://mocap.cs.cmu.edu), BVH conversion from https://github.com/una-dinosauria/cmu-mocap: "The data used in this project was obtained from mocap.cs.cmu.edu. The database was created with funding from NSF EIA-0196217." Free to use including in products (not for resale as raw data). Clips used: 02_01, 02_03, 02_05, 07_01, 07_04, 07_12, 09_01, 13_01, 13_09, 13_26, 13_29, 15_06, 18_08, 18_10.
 - **Blender 5.2** (`bpy` module, GPL-2.0+): offline tool only.
 

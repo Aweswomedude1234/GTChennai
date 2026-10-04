@@ -27,7 +27,7 @@ func setup(p: CityPack, sp: SignPainter) -> void:
 	pack = p
 	# warm shared resources on the main thread before workers touch them
 	Mats.facade(); Mats.generic(); Props.foliage_mat(); StreetDetail.poster_mat(); StreetDetail.kolam_mat()
-	for m in ["tree_rain", "tree_neem", "tree_gulmohar", "tree_young", "palm", "palm_short", "shrub", "pole", "pole_lamp", "lamp_post", "transformer", "bike_parked", "scooter_parked", "crate", "stool", "cylinder", "drum", "sack", "bin", "stand", "cart", "boat", "marina_lamp"]:
+	for m in ["tree_rain", "tree_neem", "tree_gulmohar", "tree_young", "palm", "palm_short", "shrub", "pole", "pole_lamp", "lamp_post", "transformer", "bike_parked", "scooter_parked", "crate", "stool", "cylinder", "drum", "sack", "bin", "stand", "cart", "boat", "marina_lamp", "umbrella", "fruit_cart", "flower_mat", "coconuts", "hoarding"]:
 		Props.get_mesh(m)
 	painter = sp
 	street = StreetDetail.new(p)
@@ -166,6 +166,7 @@ func _upload(res: Dictionary) -> void:
 		if ctx.sign.count() > 0: _paint_signs(c, node, ctx)
 		c.shops = ctx.shops
 		c.lights = ctx.lights
+		c.people = ctx.street.people if ctx.street else []
 	c.node = node
 	c.state = want
 	stats.built += 1

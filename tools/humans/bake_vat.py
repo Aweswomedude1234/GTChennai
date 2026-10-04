@@ -23,8 +23,8 @@ HUM = os.path.join(ROOT, "godot", "assets", "humans")
 OUT = os.path.join(HUM, "vat")
 ONLY = []
 RANGE = 1.0
-MAX_FRAMES = {"idle": 60, "talk": 60, "drink_tea": 60, "argue": 60}
-PART = {"body": 0, "top": 1, "lower": 2, "drape": 3, "hair": 4, "hair_extra": 4, "brows": 4, "moustache": 4, "extra": 5, "eyes": 6, "teeth": 6, "lashes": 4}
+MAX_FRAMES = {"idle": 60, "talk": 60, "drink_tea": 60, "argue": 60, "ride_bike": 1, "ride_scooter": 1, "ride_auto": 1, "ride_pass": 1, "ride_pillion": 1}
+PART = {"body": 0, "top": 1, "lower": 2, "drape": 3, "hair": 4, "hair_extra": 4, "moustache": 4, "extra": 5, "eyes": 6, "teeth": 6, "shoes": 7}  # brows/lashes cards: too small to matter at range
 
 
 def clear():
@@ -140,7 +140,7 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--ratio", type=float, default=0.1)
     ap.add_argument("--only", default="")
-    ap.add_argument("--clips", default="walk,walk_slow,idle,talk,drink_tea")
+    ap.add_argument("--clips", default="walk,walk_slow,idle,talk,drink_tea,ride_bike,ride_scooter,ride_auto,ride_pass,ride_pillion")
     a = ap.parse_args(argv)
     ONLY = [x for x in a.only.split(",") if x]
     main(a.ratio, a.clips.split(","))

@@ -8,7 +8,7 @@ extends Node3D
 ## one VAT MultiMesh per body variant (vertex-animation textures from tools/humans/bake_vat.py).
 
 const NEAR_R := 28.0
-const MAX_NEAR := 36
+var MAX_NEAR := 36 if not Settings.has_arg("lowmem") else 6   # lowmem: cloud harness (lavapipe keeps GPU buffers in RAM)
 const SPAWN_R := 170.0
 const DESPAWN_R := 200.0
 
@@ -24,6 +24,8 @@ var target := 0
 var enabled := true
 var stats := {"agents": 0, "near": 0}
 var _road_cache := {}
+var fixed := {}                # chunk key → Array of stationary agents (vendors, tea drinkers)
+var extra: Array = []          # [spec index, world Transform3D, Appearance, clip] drawn this frame (traffic riders)
 
 func setup(p: CityPack) -> void:
 	pack = p
@@ -80,7 +82,7 @@ func update(dt: float, hour: float) -> void:
 	# despawn far agents, spawn new ones along nearby roads
 	var keep: Array = []
 	for a in agents:
-		if Vector2(a.p.x - focus.x, a.p.z - focus.z).length() < DESPAWN_R: keep.append(a)
+		if a.has("fixed") or Vector2(a.p.x - focus.x, a.p.z - focus.z).length() < DESPAWN_R: keep.append(a)
 		elif a.actor: _release(a)
 	agents = keep
 	var spawn_budget := 40
@@ -124,6 +126,32 @@ func _spawn() -> Dictionary:
 		return a
 	return {}
 
+## stationary people placed by the street dressing (vendors at their stalls, men at the tea shop)
+func add_fixed(key: String, spots: Array) -> void:
+	remove_fixed(key)
+	var list: Array = []
+	for sp in spots:
+		var r := Rng.new(int(sp[3]))
+		var si := int(r.next() * specs.size()) % specs.size()
+		var spec: Dictionary = specs[si]
+		if String(spec.id).begins_with("child"): si = (si + 3) % specs.size(); spec = specs[si]
+		var a := {"ri": 0, "seg": 0, "dir": 1, "side": 1.0, "p": sp[0], "h": float(sp[1]), "v": 0.0, "si": si, "state": sp[2],
+			"timer": 1e9, "speed": 0.0, "phase": r.next() * 60.0, "actor": null, "seed": int(sp[3]), "lane": 0.0, "t": 0.0, "fixed": key}
+		var app := HumanActor.appearance_for(spec, Rng.new(a.seed))
+		a.top = app.top; a.lower = app.lower
+		a.skin = _skin_index(app.skin)
+		a.app = app
+		list.append(a)
+		agents.append(a)
+	fixed[key] = list
+
+func remove_fixed(key: String) -> void:
+	if not fixed.has(key): return
+	for a in fixed[key]:
+		if a.actor: _release(a)
+		agents.erase(a)
+	fixed.erase(key)
+
 static func _skin_index(c: Color) -> int:
 	var best := 0; var bd := 9.0
 	for i in Appearance.SKIN.size():
@@ -150,6 +178,7 @@ func _edge_point(a: Dictionary, pa: Vector2, pb: Vector2, t: float) -> Vector3:
 	return Vector3(p.x, 0.0 if _road_edge(a.ri) < float(pack.region.roads[a.ri].w) * 0.5 else 0.17, p.y)
 
 func _step(a: Dictionary, dt: float) -> void:
+	if a.has("fixed"): return
 	a.timer -= dt
 	if a.state != "walk":
 		a.v = 0.0
@@ -246,6 +275,18 @@ func _render() -> void:
 		var spd: float = a.v / 1.35 if a.state == "walk" else 1.0
 		buf.append_array([float(int(c.row) * 1000 + int(c.frames)), a.phase, spd, packed])
 		per[a.si] = buf
+	for e in extra:
+		var c: Dictionary = clips.get(e[3], clips.get("idle", {"row": 0, "frames": 1}))
+		var xf: Transform3D = e[1]
+		var b: Basis = xf.basis * Basis(Vector3.UP, PI)
+		var app: Appearance = e[2]
+		var buf: PackedFloat32Array = per[e[0]]
+		buf.append_array([b.x.x, b.y.x, b.z.x, xf.origin.x, b.x.y, b.y.y, b.z.y, xf.origin.y, b.x.z, b.y.z, b.z.z, xf.origin.z])
+		var top: Color = app.top.srgb_to_linear()
+		buf.append_array([top.r, top.g, top.b, _skin_index(app.skin) / 8.0])
+		var low: Color = app.lower
+		buf.append_array([float(int(c.row) * 1000 + int(c.frames)), 0.0, 1.0, float(int(low.r8) * 65536 + int(low.g8) * 256 + int(low.b8))])
+		per[e[0]] = buf
 	for i in mms.size():
 		var mm: MultiMesh = mms[i].multimesh
 		var buf: PackedFloat32Array = per[i]

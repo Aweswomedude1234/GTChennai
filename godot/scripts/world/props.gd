@@ -53,6 +53,11 @@ static func _build(name: String) -> Mesh:
 		"cart": return _cart()
 		"boat": return _boat()
 		"marina_lamp": return _marina_lamp()
+		"umbrella": return _umbrella()
+		"fruit_cart": return _fruit_cart(7)
+		"flower_mat": return _flower_mat(11)
+		"coconuts": return _coconuts(13)
+		"hoarding": return _hoarding()
 	push_error("unknown prop " + name)
 	return BoxMesh.new()
 
@@ -344,4 +349,101 @@ static func _marina_lamp() -> ArrayMesh:
 		mb.tube(Vector3(0, 11.7, 0), Vector3(0, 11.9, 0) + d * 0.9, 0.035, 5, steel, g(GM.METAL, 0.45))
 		mb.box(Vector3(0, 11.9, 0) + d * 1.05, Vector3(0.22, 0.06, 0.12), -a, Rng.hex_lin("#5a5a5a"), g(GM.METAL, 0.4))
 		mb.box(Vector3(0, 11.83, 0) + d * 1.05, Vector3(0.19, 0.012, 0.1), -a, Color(0.95, 0.97, 1.0), g(GM.LED, 0.3, 1.0))
+	return mb.to_mesh(Mats.generic())
+
+
+## big vendor umbrella (the striped beach type every footpath stall uses); panels tint per instance
+static func _umbrella() -> ArrayMesh:
+	var mb := MB.new(false)
+	mb.tube(Vector3(0, 0, 0), Vector3(0, 2.35, 0), 0.02, 5, Rng.hex_lin("#6a6a6a"), g(GM.METAL, 0.5))
+	var segs := 10
+	var R := 1.25
+	for i in segs:
+		var a0 := TAU * i / segs; var a1 := TAU * (i + 1) / segs
+		var tint := Color(1, 1, 1) if i % 2 == 0 else Rng.hex_lin("#ffe9a0")   # stripes: tint × white / × cream
+		var top := Vector3(0, 2.45, 0)
+		var e0 := Vector3(cos(a0) * R, 2.05, sin(a0) * R); var e1 := Vector3(cos(a1) * R, 2.05, sin(a1) * R)
+		var nrm := (e1 - top).cross(e0 - top).normalized()
+		if nrm.y < 0: nrm = -nrm
+		mb.tri(top, e0, e1, nrm, tint, g(GM.TARP, 0.8))
+		mb.tri(top, e1, e0, -nrm, tint * 0.8, g(GM.TARP, 0.8))
+		# scalloped valance
+		mb.quad(e0, e1, e1 - Vector3(0, 0.12, 0), e0 - Vector3(0, 0.12, 0), Vector3(cos((a0 + a1) * 0.5), 0, sin((a0 + a1) * 0.5)), tint, g(GM.TARP, 0.8))
+	return mb.to_mesh(Mats.generic())
+
+## four-wheel wooden fruit pushcart piled with bananas, oranges, apples and pomegranates
+static func _fruit_cart(seed: int) -> ArrayMesh:
+	var r := Rng.new(seed)
+	var mb := MB.new(false)
+	var wood := Rng.hex_lin("#7a5232")
+	mb.box(Vector3(0, 0.78, 0), Vector3(0.95, 0.04, 0.6), 0.0, wood, g(GM.WOOD, 0.85))
+	for side in [-1.0, 1.0]:
+		mb.box(Vector3(0, 0.86, side * 0.6), Vector3(0.95, 0.06, 0.02), 0.0, wood * 0.9, g(GM.WOOD, 0.85))
+		mb.box(Vector3(side * 0.95, 0.86, 0), Vector3(0.02, 0.06, 0.6), 0.0, wood * 0.9, g(GM.WOOD, 0.85))
+	mb.beam(Vector3(0.95, 0.8, -0.4), Vector3(1.55, 0.95, -0.4), 0.04, 0.04, wood, g(GM.WOOD, 0.8))   # handles
+	mb.beam(Vector3(0.95, 0.8, 0.4), Vector3(1.55, 0.95, 0.4), 0.04, 0.04, wood, g(GM.WOOD, 0.8))
+	for x in [-0.7, 0.7]:
+		for z in [-0.5, 0.5]:
+			mb.cylinder(x, 0.0, z, 0.03, 0.78, 5, wood * 0.8, g(GM.WOOD, 0.9))
+	# fruit heaps: tiered mounds of balls (oranges / apples / pomegranates / sweet lime)
+	var fruits := [[Rng.hex_lin("#f08a10"), 0.045], [Rng.hex_lin("#b0121a"), 0.042], [Rng.hex_lin("#9a1a2a"), 0.05], [Rng.hex_lin("#9cc23a"), 0.045]]
+	for k in 3:
+		var f: Array = fruits[(k + seed) % fruits.size()]
+		var cx := -0.62 + k * 0.62
+		for n in 46:
+			var a := r.next() * TAU; var rr := sqrt(r.next()) * 0.26
+			var h := 0.84 + (0.26 - rr) * 0.9 + r.next() * 0.03
+			mb.ball(Vector3(cx + cos(a) * rr, h, sin(a) * rr * 1.6), f[1], (f[0] as Color) * r.range_f(0.85, 1.1), g(GM.PAINT, 0.45), 5, 3)
+	# hanging banana bunches on a cross bar
+	mb.tube(Vector3(-0.9, 1.75, 0), Vector3(0.9, 1.75, 0), 0.02, 4, wood, g(GM.WOOD, 0.8))
+	for x in [-0.9, 0.9]: mb.tube(Vector3(x, 0.86, 0), Vector3(x, 1.8, 0), 0.025, 4, wood, g(GM.WOOD, 0.8))
+	for b in 4:
+		var bx := -0.6 + b * 0.4
+		for k in 10:
+			var a := k * 0.63
+			var c := Vector3(bx + cos(a) * 0.07, 1.6 - k * 0.022, sin(a) * 0.07)
+			mb.tube(c, c + Vector3(cos(a) * 0.06, -0.14, sin(a) * 0.06), 0.017, 4, Rng.hex_lin("#e8c21a") * r.range_f(0.85, 1.05), g(GM.PAINT, 0.5))
+	return mb.to_mesh(Mats.generic())
+
+## flower seller's spread: mat, baskets of jasmine strings and marigold, a few rose heaps
+static func _flower_mat(seed: int) -> ArrayMesh:
+	var r := Rng.new(seed)
+	var mb := MB.new(false)
+	mb.box(Vector3(0, 0.01, 0), Vector3(0.8, 0.01, 0.55), 0.0, Rng.hex_lin("#b89a5a"), g(GM.CLOTH, 0.9))   # palm-leaf mat
+	var heaps := [[Rng.hex_lin("#f4f2ea"), 0.016], [Rng.hex_lin("#f39a0e"), 0.022], [Rng.hex_lin("#f4f2ea"), 0.016], [Rng.hex_lin("#c0142a"), 0.02], [Rng.hex_lin("#ffd21a"), 0.022]]
+	for k in 5:
+		var c := Vector3(-0.55 + (k % 3) * 0.55, 0.0, -0.22 + (k / 3) * 0.44)
+		mb.cylinder(c.x, 0.02, c.z, 0.2, 0.09, 10, Rng.hex_lin("#8a6a3a"), g(GM.WOOD, 0.9), Vector4.ZERO, true, 0.23)   # basket
+		var h: Array = heaps[k]
+		for n in 40:
+			var a := r.next() * TAU; var rr := sqrt(r.next()) * 0.19
+			mb.ball(c + Vector3(cos(a) * rr, 0.11 + (0.19 - rr) * 0.5, sin(a) * rr), h[1], (h[0] as Color) * r.range_f(0.9, 1.05), g(GM.CLOTH, 0.7), 4, 2)
+	# jasmine strings coiled into balls (madurai malli) and a hanging string from a stick
+	mb.tube(Vector3(0.8, 0.0, 0.5), Vector3(0.8, 1.3, 0.5), 0.015, 4, Rng.hex_lin("#5a4a3a"), g(GM.WOOD, 0.9))
+	for k in 8:
+		mb.ball(Vector3(0.8, 1.25 - k * 0.07, 0.53), 0.03, Rng.hex_lin("#f6f4ec"), g(GM.CLOTH, 0.6), 5, 3)
+	return mb.to_mesh(Mats.generic())
+
+## tender-coconut seller's heap (green coconuts, a few husked white ones) and the chopping block
+static func _coconuts(seed: int) -> ArrayMesh:
+	var r := Rng.new(seed)
+	var mb := MB.new(false)
+	for n in 34:
+		var a := r.next() * TAU; var rr := sqrt(r.next()) * 0.55
+		var col := Rng.hex_lin("#5e8a22") if r.next() < 0.85 else Rng.hex_lin("#d9c79a")
+		mb.ball(Vector3(cos(a) * rr, 0.1 + (0.55 - rr) * 0.45, sin(a) * rr), r.range_f(0.09, 0.11), col * r.range_f(0.8, 1.1), g(GM.PAINT, 0.6), 6, 4, 1.15)
+	mb.cylinder(0.8, 0.0, 0.0, 0.18, 0.45, 8, Rng.hex_lin("#6a4a2a"), g(GM.WOOD, 0.9))
+	mb.box(Vector3(0.8, 0.5, 0.0), Vector3(0.18, 0.01, 0.025), 0.3, Rng.hex_lin("#9a9a9a"), g(GM.METAL, 0.3))   # aruval
+	return mb.to_mesh(Mats.generic())
+
+## flex hoarding frame: two steel posts and a timber/steel backing; the print is a poster quad
+static func _hoarding() -> ArrayMesh:
+	var mb := MB.new(false)
+	var steel := Rng.hex_lin("#4a4a48")
+	for x in [-1.6, 1.6]:
+		mb.tube(Vector3(x, 0, -0.05), Vector3(x, 6.6, -0.05), 0.05, 6, steel, g(GM.RUST, 0.7))
+		mb.tube(Vector3(x, 0, -0.05), Vector3(x * 0.8, 3.0, -0.9), 0.035, 5, steel, g(GM.RUST, 0.7))   # strut
+	for y in [2.4, 4.4, 6.4]:
+		mb.beam(Vector3(-1.75, y, -0.08), Vector3(1.75, y, -0.08), 0.06, 0.06, steel, g(GM.RUST, 0.7))
+	mb.box(Vector3(0, 4.4, -0.1), Vector3(1.6, 2.1, 0.01), 0.0, Rng.hex_lin("#3a3a38"), g(GM.TARP, 0.9))
 	return mb.to_mesh(Mats.generic())

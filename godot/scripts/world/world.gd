@@ -55,11 +55,13 @@ func setup(city: String) -> void:
 		crowd.name = "Crowd"
 		add_child(crowd)
 		crowd.setup(pack)
+		streamer.chunk_near.connect(func(key: String, c: Dictionary) -> void: crowd.add_fixed(key, c.get("people", [])))
+		streamer.chunk_unloaded.connect(func(key: String, _c: Dictionary) -> void: crowd.remove_fixed(key))
 	if not Settings.has_arg("notraffic"):
 		traffic = Traffic.new()
 		traffic.name = "Traffic"
 		add_child(traffic)
-		traffic.setup(pack)
+		traffic.setup(pack, crowd)
 	print("[world] region built in %d ms (%d road verts, %d ground verts)" % [Time.get_ticks_msec() - t0, region.roads.count(), region.ground.count()])
 
 func _add_mesh(nm: String, mb: MB, mat: Material, shadows: bool) -> void:
@@ -111,10 +113,10 @@ var traffic: Traffic
 var obstacles: Array[Vector3] = []   # set by the game: player / player's vehicle
 
 func _process(dt: float) -> void:
-	if crowd:
-		crowd.focus = Vector3(streamer.focus.x, 0, streamer.focus.y)
-		crowd.update(dt, clock.hour)
-	if traffic:
+	if traffic:   # before the crowd: it draws the far-tier riders this frame
 		traffic.focus = Vector3(streamer.focus.x, 0, streamer.focus.y)
 		traffic.obstacles = obstacles
 		traffic.update(dt, clock.hour)
+	if crowd:
+		crowd.focus = Vector3(streamer.focus.x, 0, streamer.focus.y)
+		crowd.update(dt, clock.hour)

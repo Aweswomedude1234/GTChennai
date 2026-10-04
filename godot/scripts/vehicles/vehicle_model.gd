@@ -53,14 +53,19 @@ static func make(kind_: String, seed: int) -> VehicleModel:
 	vm.recolour(seed)
 	return vm
 
+## the paint colours a given seed gets (same for the full body and the far MultiMesh tier)
+static func paint_for(kind_: String, seed: int) -> Array:
+	var r := Rng.new(seed * 7 + 3)
+	var pal = r.pick(PALETTE.get(kind_, ["#888888"]))
+	if pal is Array: return [Color(pal[0]), Color(pal[1])]
+	return [Color(pal), Color("#1a1a1a")]
+
 ## new random paint / dirt / age for this body (pooled traffic reuses bodies)
 func recolour(seed: int) -> void:
+	var cs := paint_for(kind, seed)
+	set_paint(cs[0], cs[1])
 	var r := Rng.new(seed * 7 + 3)
-	var pal = r.pick(PALETTE.get(kind, ["#888888"]))
-	var c1: Color; var c2 := Color("#1a1a1a")
-	if pal is Array: c1 = Color(pal[0]); c2 = Color(pal[1])
-	else: c1 = Color(pal)
-	set_paint(c1, c2)
+	r.next()
 	set_param("dirt", r.range_f(0.15, 0.8))
 	set_param("age", r.range_f(0.05, 0.7) if kind != "bus" else r.range_f(0.3, 0.9))
 	set_param("band", BAND.get(kind, Vector4(-10, -10, -10, -10)))

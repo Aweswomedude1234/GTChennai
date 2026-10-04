@@ -90,8 +90,8 @@ static func appearance_for(s: Dictionary, r: Rng) -> Appearance:
 	a.skin = Color(Appearance.SKIN[r.pick_w(Appearance.SKIN_W)])
 	a.hair = Color(r.pick(Appearance.HAIR_GREY)) if float(s.macro.age) > 0.78 and r.next() < 0.7 else Color(r.pick(Appearance.HAIR))
 	match String(s.dress):
-		"shirt_pants": a.top = Color(r.pick(Appearance.SHIRTS)); a.lower = Color(r.pick(Appearance.PANTS)); a.top_pattern = 1 if r.next() < 0.25 else (3 if r.next() < 0.1 else 0)
-		"tshirt_pants": a.top = Color(r.pick(Appearance.TSHIRTS)); a.lower = Color(r.pick(Appearance.PANTS))
+		"shirt_pants": a.top = Color(r.pick(Appearance.SHIRTS)); a.lower = Color(r.pick(Appearance.PANTS)); a.top_pattern = 1 if r.next() < 0.25 else (3 if r.next() < 0.1 else 0); a.lower_denim = r.next() < 0.45
+		"tshirt_pants": a.top = Color(r.pick(Appearance.TSHIRTS)); a.lower = Color(r.pick(Appearance.PANTS)); a.lower_denim = r.next() < 0.65
 		"shirt_veshti": a.top = Color(r.pick(Appearance.SHIRTS)) if r.next() < 0.7 else Color(r.pick(Appearance.VESHTI)); a.lower = Color(r.pick(Appearance.VESHTI)); a.border = Color(r.pick(Appearance.VESHTI_BORDER)); a.pattern = 2
 		"shirt_lungi": a.top = Color(r.pick(Appearance.SHIRTS)); a.lower = Color(r.pick(Appearance.LUNGI)); a.border = Color(r.pick(Appearance.LUNGI)).darkened(0.3); a.pattern = 1
 		"saree":
@@ -109,8 +109,18 @@ static func _shader(name: String) -> Shader:
 	if not _mats.has(name): _mats[name] = load("res://shaders/%s.gdshader" % name)
 	return _mats[name]
 
+static var _tex := {}
+static func htex(file: String) -> Texture2D:
+	if file == "": return null
+	if not _tex.has(file): _tex[file] = load("res://assets/humans/tex/" + file)
+	return _tex[file]
+
+static func _lin_lum(c: Array) -> float:
+	return maxf(0.004, float(c[0]) * 0.3 + float(c[1]) * 0.55 + float(c[2]) * 0.15)
+
 func _shade(r: Rng) -> void:
 	var noise: Texture2D = Mats.tex("noise")
+	var T: Dictionary = spec.get("tex", {})
 	for mi in skeleton.get_children():
 		if not (mi is MeshInstance3D): continue
 		var m := ShaderMaterial.new()
@@ -123,14 +133,25 @@ func _shade(r: Rng) -> void:
 				m.set_shader_parameter("sweat", r.range_f(0.2, 0.7))
 				m.set_shader_parameter("masks", load("res://assets/humans/skin_masks.png"))
 				m.set_shader_parameter("noise", noise)
+				if T.has("body"):
+					m.set_shader_parameter("use_tex", true)
+					m.set_shader_parameter("tex", htex(T.body.file))
+					var mn: Array = T.body.mean
+					m.set_shader_parameter("tex_mean", Vector3(mn[0], mn[1], mn[2]))
 			"hair", "hair_extra", "brows", "moustache":
 				m.shader = _shader("hair")
 				m.set_shader_parameter("color", app.hair)
 				m.set_shader_parameter("oil", r.range_f(0.3, 0.9))
 				m.set_shader_parameter("noise", noise)
+				if T.has(String(mi.name)) and mi.name in ["hair", "brows"]:
+					var tt: Dictionary = T[String(mi.name)]
+					m.set_shader_parameter("use_tex", true)
+					m.set_shader_parameter("tex", htex(tt.file))
+					m.set_shader_parameter("tex_lum", _lin_lum(tt.mean))
+					m.set_shader_parameter("alpha_cut", 0.45 if mi.name == "hair" else 0.3)
 			"eyes":
 				m.shader = _shader("eye")
-			"top", "lower", "drape", "extra":
+			"top", "lower", "drape", "extra", "shoes":
 				m.shader = _shader("cloth")
 				m.set_shader_parameter("weave", Mats.tex("cloth_n"))
 				var col: Color; var col2 := app.border; var pat := 0
@@ -143,6 +164,13 @@ func _shade(r: Rng) -> void:
 				m.set_shader_parameter("color2", col2)
 				m.set_shader_parameter("pattern", pat)
 				m.set_shader_parameter("sheen", 0.5 if spec.dress == "saree" and mi.name in ["lower", "drape"] else 0.0)
+			"lashes" when T.has("lashes"):
+				m.shader = _shader("hair")
+				m.set_shader_parameter("color", Color(0.01, 0.008, 0.006))
+				m.set_shader_parameter("use_tex", true)
+				m.set_shader_parameter("tex", htex(T.lashes.file))
+				m.set_shader_parameter("tex_lum", 1.0)
+				m.set_shader_parameter("alpha_cut", 0.3)
 			"teeth":
 				var sm := StandardMaterial3D.new(); sm.albedo_color = Color(0.85, 0.82, 0.74); sm.roughness = 0.3
 				mi.material_override = sm

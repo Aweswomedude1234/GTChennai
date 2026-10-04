@@ -19,7 +19,74 @@
   "sleeve": "half",
   "hair": "short",
   "towel": false,
-  "seed": 404194672
+  "seed": 404194672,
+  "tex": {
+   "body": {
+    "file": "young_darkskinned_male_diffuse.jpg",
+    "mean": [
+     0.0887,
+     0.0369,
+     0.0194
+    ]
+   },
+   "hair": {
+    "file": "short04_diffuse.png",
+    "mean": [
+     0.016,
+     0.0168,
+     0.0168
+    ],
+    "lum": 0.1413
+   },
+   "brows": {
+    "file": "eyebrow004.png",
+    "mean": [
+     0.0044,
+     0.0021,
+     0.0018
+    ],
+    "lum": 0.0386
+   },
+   "lashes": {
+    "file": "eyelashes01.png",
+    "mean": [
+     0.0024,
+     0.0009,
+     0.0003
+    ],
+    "lum": 0.0169
+   },
+   "top": {
+    "file": "male_casualsuit03_diffuse.jpg",
+    "mean": [
+     0.0423,
+     0.0782,
+     0.147
+    ],
+    "lum": 0.2786,
+    "normal": "male_casualsuit03_normal.jpg"
+   },
+   "lower": {
+    "file": "male_casualsuit03_diffuse.jpg",
+    "mean": [
+     0.0423,
+     0.0782,
+     0.147
+    ],
+    "lum": 0.2786,
+    "normal": "male_casualsuit03_normal.jpg"
+   },
+   "shoes": {
+    "file": "shoes04_diffuse.jpg",
+    "mean": [
+     0.0176,
+     0.0168,
+     0.0168
+    ],
+    "lum": 0.1659,
+    "normal": "shoes04_normal.jpg"
+   }
+  }
  },
  {
   "id": "man_01",
@@ -41,7 +108,44 @@
   "sleeve": "half",
   "hair": "short",
   "towel": true,
-  "seed": 839084350
+  "seed": 839084350,
+  "tex": {
+   "body": {
+    "file": "young_darkskinned_male_diffuse.jpg",
+    "mean": [
+     0.0887,
+     0.0369,
+     0.0194
+    ]
+   },
+   "hair": {
+    "file": "short02_diffuse.png",
+    "mean": [
+     0.0704,
+     0.0452,
+     0.0307
+    ],
+    "lum": 0.2473
+   },
+   "brows": {
+    "file": "eyebrow001.png",
+    "mean": [
+     0.0037,
+     0.0015,
+     0.0012
+    ],
+    "lum": 0.0352
+   },
+   "lashes": {
+    "file": "eyelashes04.png",
+    "mean": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "lum": 0.0
+   }
+  }
  },
  {
   "id": "man_02",
@@ -63,7 +167,44 @@
   "sleeve": "half",
   "hair": "short",
   "towel": true,
-  "seed": 833701883
+  "seed": 833701883,
+  "tex": {
+   "body": {
+    "file": "young_darkskinned_male_diffuse.jpg",
+    "mean": [
+     0.0887,
+     0.0369,
+     0.0194
+    ]
+   },
+   "hair": {
+    "file": "short01_diffuse.png",
+    "mean": [
+     0.0123,
+     0.0123,
+     0.0123
+    ],
+    "lum": 0.1067
+   },
+   "brows": {
+    "file": "eyebrow006.png",
+    "mean": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "lum": 0.0
+   },
+   "lashes": {
+    "file": "eyelashes01.png",
+    "mean": [
+     0.0024,
+     0.0009,
+     0.0003
+    ],
+    "lum": 0.0169
+   }
+  }
  },
  {
   "id": "man_03",
@@ -85,7 +226,44 @@
   "sleeve": "half",
   "hair": "short",
   "towel": true,
-  "seed": 377815734
+  "seed": 377815734,
+  "tex": {
+   "body": {
+    "file": "young_darkskinned_male_diffuse.jpg",
+    "mean": [
+     0.0887,
+     0.0369,
+     0.0194
+    ]
+   },
+   "hair": {
+    "file": "short02_diffuse.png",
+    "mean": [
+     0.0704,
+     0.0452,
+     0.0307
+    ],
+    "lum": 0.2473
+   },
+   "brows": {
+    "file": "eyebrow004.png",
+    "mean": [
+     0.0044,
+     0.0021,
+     0.0018
+    ],
+    "lum": 0.0386
+   },
+   "lashes": {
+    "file": "eyelashes04.png",
+    "mean": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "lum": 0.0
+   }
+  }
  },
  {
   "id": "man_04",
@@ -107,7 +285,74 @@
   "sleeve": "full",
   "hair": "short",
   "towel": false,
-  "seed": 517251336
+  "seed": 517251336,
+  "tex": {
+   "body": {
+    "file": "middleage_darkskinned_male_diffuse.jpg",
+    "mean": [
+     0.1221,
+     0.0467,
+     0.0222
+    ]
+   },
+   "hair": {
+    "file": "short01_diffuse.png",
+    "mean": [
+     0.0123,
+     0.0123,
+     0.0123
+    ],
+    "lum": 0.1067
+   },
+   "brows": {
+    "file": "eyebrow002.png",
+    "mean": [
+     0.0037,
+     0.0018,
+     0.0015
+    ],
+    "lum": 0.037
+   },
+   "lashes": {
+    "file": "eyelashes04.png",
+    "mean": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "lum": 0.0
+   },
+   "top": {
+    "file": "male_casualsuit01_diffuse.jpg",
+    "mean": [
+     0.0529,
+     0.0685,
+     0.1046
+    ],
+    "lum": 0.2933,
+    "normal": "male_casualsuit01_normal.jpg"
+   },
+   "lower": {
+    "file": "male_casualsuit01_diffuse.jpg",
+    "mean": [
+     0.0529,
+     0.0685,
+     0.1046
+    ],
+    "lum": 0.2933,
+    "normal": "male_casualsuit01_normal.jpg"
+   },
+   "shoes": {
+    "file": "shoes01_diffuse.jpg",
+    "mean": [
+     0.227,
+     0.0742,
+     0.0356
+    ],
+    "lum": 0.3581,
+    "normal": "shoes01_normal.jpg"
+   }
+  }
  },
  {
   "id": "man_05",
@@ -129,7 +374,74 @@
   "sleeve": "half",
   "hair": "short",
   "towel": false,
-  "seed": 197560960
+  "seed": 197560960,
+  "tex": {
+   "body": {
+    "file": "middleage_lightskinned_male_diffuse2.jpg",
+    "mean": [
+     0.6867,
+     0.4287,
+     0.2747
+    ]
+   },
+   "hair": {
+    "file": "short02_diffuse.png",
+    "mean": [
+     0.0704,
+     0.0452,
+     0.0307
+    ],
+    "lum": 0.2473
+   },
+   "brows": {
+    "file": "eyebrow004.png",
+    "mean": [
+     0.0044,
+     0.0021,
+     0.0018
+    ],
+    "lum": 0.0386
+   },
+   "lashes": {
+    "file": "eyelashes04.png",
+    "mean": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "lum": 0.0
+   },
+   "top": {
+    "file": "male_casualsuit03_diffuse.jpg",
+    "mean": [
+     0.0423,
+     0.0782,
+     0.147
+    ],
+    "lum": 0.2786,
+    "normal": "male_casualsuit03_normal.jpg"
+   },
+   "lower": {
+    "file": "male_casualsuit03_diffuse.jpg",
+    "mean": [
+     0.0423,
+     0.0782,
+     0.147
+    ],
+    "lum": 0.2786,
+    "normal": "male_casualsuit03_normal.jpg"
+   },
+   "shoes": {
+    "file": "shoes01_diffuse.jpg",
+    "mean": [
+     0.227,
+     0.0742,
+     0.0356
+    ],
+    "lum": 0.3581,
+    "normal": "shoes01_normal.jpg"
+   }
+  }
  },
  {
   "id": "man_06",
@@ -151,7 +463,44 @@
   "sleeve": "full",
   "hair": "short",
   "towel": true,
-  "seed": 962551750
+  "seed": 962551750,
+  "tex": {
+   "body": {
+    "file": "old_darkskinned_male_diffuse.jpg",
+    "mean": [
+     0.1441,
+     0.0467,
+     0.0185
+    ]
+   },
+   "hair": {
+    "file": "short04_diffuse.png",
+    "mean": [
+     0.016,
+     0.0168,
+     0.0168
+    ],
+    "lum": 0.1413
+   },
+   "brows": {
+    "file": "eyebrow003.png",
+    "mean": [
+     0.003,
+     0.0015,
+     0.0012
+    ],
+    "lum": 0.03
+   },
+   "lashes": {
+    "file": "eyelashes04.png",
+    "mean": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "lum": 0.0
+   }
+  }
  },
  {
   "id": "man_07",
@@ -173,7 +522,35 @@
   "sleeve": "full",
   "hair": "bald_sides",
   "towel": false,
-  "seed": 102634811
+  "seed": 102634811,
+  "tex": {
+   "body": {
+    "file": "old_darkskinned_male_diffuse.jpg",
+    "mean": [
+     0.1441,
+     0.0467,
+     0.0185
+    ]
+   },
+   "brows": {
+    "file": "eyebrow001.png",
+    "mean": [
+     0.0037,
+     0.0015,
+     0.0012
+    ],
+    "lum": 0.0352
+   },
+   "lashes": {
+    "file": "eyelashes01.png",
+    "mean": [
+     0.0024,
+     0.0009,
+     0.0003
+    ],
+    "lum": 0.0169
+   }
+  }
  },
  {
   "id": "woman_00",
@@ -196,7 +573,44 @@
   "dress": "saree",
   "sleeve": "short",
   "hair": "plait",
-  "seed": 663752041
+  "seed": 663752041,
+  "tex": {
+   "body": {
+    "file": "young_darkskinned_female_diffuse.jpg",
+    "mean": [
+     0.1413,
+     0.0467,
+     0.0242
+    ]
+   },
+   "hair": {
+    "file": "braid01_diffuse.png",
+    "mean": [
+     0.004,
+     0.0033,
+     0.0027
+    ],
+    "lum": 0.0796
+   },
+   "brows": {
+    "file": "eyebrow008.png",
+    "mean": [
+     0.0027,
+     0.0012,
+     0.0009
+    ],
+    "lum": 0.0272
+   },
+   "lashes": {
+    "file": "eyelashes02.png",
+    "mean": [
+     0.0006,
+     0.0,
+     0.0
+    ],
+    "lum": 0.0058
+   }
+  }
  },
  {
   "id": "woman_01",
@@ -219,7 +633,35 @@
   "dress": "saree",
   "sleeve": "short",
   "hair": "bun",
-  "seed": 596466468
+  "seed": 596466468,
+  "tex": {
+   "body": {
+    "file": "young_darkskinned_female_diffuse.jpg",
+    "mean": [
+     0.1413,
+     0.0467,
+     0.0242
+    ]
+   },
+   "brows": {
+    "file": "eyebrow008.png",
+    "mean": [
+     0.0027,
+     0.0012,
+     0.0009
+    ],
+    "lum": 0.0272
+   },
+   "lashes": {
+    "file": "eyelashes02.png",
+    "mean": [
+     0.0006,
+     0.0,
+     0.0
+    ],
+    "lum": 0.0058
+   }
+  }
  },
  {
   "id": "woman_02",
@@ -242,7 +684,44 @@
   "dress": "saree",
   "sleeve": "short",
   "hair": "plait",
-  "seed": 695677601
+  "seed": 695677601,
+  "tex": {
+   "body": {
+    "file": "young_lightskinned_female_diffuse3.jpg",
+    "mean": [
+     0.7084,
+     0.4125,
+     0.2423
+    ]
+   },
+   "hair": {
+    "file": "braid01_diffuse.png",
+    "mean": [
+     0.004,
+     0.0033,
+     0.0027
+    ],
+    "lum": 0.0796
+   },
+   "brows": {
+    "file": "eyebrow010.png",
+    "mean": [
+     0.0027,
+     0.0,
+     0.0
+    ],
+    "lum": 0.0115
+   },
+   "lashes": {
+    "file": "eyelashes02.png",
+    "mean": [
+     0.0006,
+     0.0,
+     0.0
+    ],
+    "lum": 0.0058
+   }
+  }
  },
  {
   "id": "woman_03",
@@ -265,7 +744,44 @@
   "dress": "nighty",
   "sleeve": "short",
   "hair": "plait",
-  "seed": 320937385
+  "seed": 320937385,
+  "tex": {
+   "body": {
+    "file": "young_darkskinned_female_diffuse.jpg",
+    "mean": [
+     0.1413,
+     0.0467,
+     0.0242
+    ]
+   },
+   "hair": {
+    "file": "braid01_diffuse.png",
+    "mean": [
+     0.004,
+     0.0033,
+     0.0027
+    ],
+    "lum": 0.0796
+   },
+   "brows": {
+    "file": "eyebrow011.png",
+    "mean": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "lum": 0.0
+   },
+   "lashes": {
+    "file": "eyelashes03.png",
+    "mean": [
+     0.0006,
+     0.0,
+     0.0
+    ],
+    "lum": 0.0058
+   }
+  }
  },
  {
   "id": "woman_04",
@@ -288,7 +804,44 @@
   "dress": "churidar",
   "sleeve": "short",
   "hair": "plait",
-  "seed": 627695855
+  "seed": 627695855,
+  "tex": {
+   "body": {
+    "file": "middleage_darkskinned_female_diffuse.jpg",
+    "mean": [
+     0.147,
+     0.0482,
+     0.0242
+    ]
+   },
+   "hair": {
+    "file": "braid01_diffuse.png",
+    "mean": [
+     0.004,
+     0.0033,
+     0.0027
+    ],
+    "lum": 0.0796
+   },
+   "brows": {
+    "file": "eyebrow009.png",
+    "mean": [
+     0.0097,
+     0.007,
+     0.0056
+    ],
+    "lum": 0.0809
+   },
+   "lashes": {
+    "file": "eyelashes03.png",
+    "mean": [
+     0.0006,
+     0.0,
+     0.0
+    ],
+    "lum": 0.0058
+   }
+  }
  },
  {
   "id": "woman_05",
@@ -311,7 +864,44 @@
   "dress": "saree",
   "sleeve": "short",
   "hair": "plait",
-  "seed": 968156212
+  "seed": 968156212,
+  "tex": {
+   "body": {
+    "file": "middleage_darkskinned_female_diffuse.jpg",
+    "mean": [
+     0.147,
+     0.0482,
+     0.0242
+    ]
+   },
+   "hair": {
+    "file": "braid01_diffuse.png",
+    "mean": [
+     0.004,
+     0.0033,
+     0.0027
+    ],
+    "lum": 0.0796
+   },
+   "brows": {
+    "file": "eyebrow009.png",
+    "mean": [
+     0.0097,
+     0.007,
+     0.0056
+    ],
+    "lum": 0.0809
+   },
+   "lashes": {
+    "file": "eyelashes03.png",
+    "mean": [
+     0.0006,
+     0.0,
+     0.0
+    ],
+    "lum": 0.0058
+   }
+  }
  },
  {
   "id": "woman_06",
@@ -334,7 +924,44 @@
   "dress": "saree",
   "sleeve": "short",
   "hair": "plait",
-  "seed": 303127804
+  "seed": 303127804,
+  "tex": {
+   "body": {
+    "file": "old_darkskinned_female_diffuse.jpg",
+    "mean": [
+     0.1384,
+     0.0284,
+     0.011
+    ]
+   },
+   "hair": {
+    "file": "braid01_diffuse.png",
+    "mean": [
+     0.004,
+     0.0033,
+     0.0027
+    ],
+    "lum": 0.0796
+   },
+   "brows": {
+    "file": "eyebrow007.png",
+    "mean": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "lum": 0.0
+   },
+   "lashes": {
+    "file": "eyelashes02.png",
+    "mean": [
+     0.0006,
+     0.0,
+     0.0
+    ],
+    "lum": 0.0058
+   }
+  }
  },
  {
   "id": "child_00",
@@ -355,7 +982,54 @@
   "dress": "uniform_shorts",
   "sleeve": "half",
   "hair": "short",
-  "seed": 327230716
+  "seed": 327230716,
+  "tex": {
+   "body": {
+    "file": "young_darkskinned_male_diffuse.jpg",
+    "mean": [
+     0.0887,
+     0.0369,
+     0.0194
+    ]
+   },
+   "hair": {
+    "file": "short02_diffuse.png",
+    "mean": [
+     0.0704,
+     0.0452,
+     0.0307
+    ],
+    "lum": 0.2473
+   },
+   "brows": {
+    "file": "eyebrow002.png",
+    "mean": [
+     0.0037,
+     0.0018,
+     0.0015
+    ],
+    "lum": 0.037
+   },
+   "lashes": {
+    "file": "eyelashes04.png",
+    "mean": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "lum": 0.0
+   },
+   "shoes": {
+    "file": "shoes04_diffuse.jpg",
+    "mean": [
+     0.0176,
+     0.0168,
+     0.0168
+    ],
+    "lum": 0.1659,
+    "normal": "shoes04_normal.jpg"
+   }
+  }
  },
  {
   "id": "child_01",
@@ -376,7 +1050,54 @@
   "dress": "uniform_skirt",
   "sleeve": "half",
   "hair": "plait",
-  "seed": 464086421
+  "seed": 464086421,
+  "tex": {
+   "body": {
+    "file": "young_darkskinned_female_diffuse.jpg",
+    "mean": [
+     0.1413,
+     0.0467,
+     0.0242
+    ]
+   },
+   "hair": {
+    "file": "braid01_diffuse.png",
+    "mean": [
+     0.004,
+     0.0033,
+     0.0027
+    ],
+    "lum": 0.0796
+   },
+   "brows": {
+    "file": "eyebrow012.png",
+    "mean": [
+     0.0018,
+     0.0,
+     0.0
+    ],
+    "lum": 0.0106
+   },
+   "lashes": {
+    "file": "eyelashes03.png",
+    "mean": [
+     0.0006,
+     0.0,
+     0.0
+    ],
+    "lum": 0.0058
+   },
+   "shoes": {
+    "file": "shoes04_diffuse.jpg",
+    "mean": [
+     0.0176,
+     0.0168,
+     0.0168
+    ],
+    "lum": 0.1659,
+    "normal": "shoes04_normal.jpg"
+   }
+  }
  },
  {
   "id": "child_02",
@@ -397,6 +1118,53 @@
   "dress": "uniform_shorts",
   "sleeve": "half",
   "hair": "short",
-  "seed": 285924535
+  "seed": 285924535,
+  "tex": {
+   "body": {
+    "file": "young_darkskinned_male_diffuse.jpg",
+    "mean": [
+     0.0887,
+     0.0369,
+     0.0194
+    ]
+   },
+   "hair": {
+    "file": "short04_diffuse.png",
+    "mean": [
+     0.016,
+     0.0168,
+     0.0168
+    ],
+    "lum": 0.1413
+   },
+   "brows": {
+    "file": "eyebrow006.png",
+    "mean": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "lum": 0.0
+   },
+   "lashes": {
+    "file": "eyelashes01.png",
+    "mean": [
+     0.0024,
+     0.0009,
+     0.0003
+    ],
+    "lum": 0.0169
+   },
+   "shoes": {
+    "file": "shoes04_diffuse.jpg",
+    "mean": [
+     0.0176,
+     0.0168,
+     0.0168
+    ],
+    "lum": 0.1659,
+    "normal": "shoes04_normal.jpg"
+   }
+  }
  }
 ]

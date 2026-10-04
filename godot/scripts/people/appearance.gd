@@ -39,6 +39,7 @@ var gait := 1.0
 var mustache := false
 var towel := false
 var jasmine := false
+var lower_denim := false   # MakeHuman jeans keep their denim texture colour
 
 static func make(r: Rng, demo := {"men": 0.52, "women": 0.38, "children": 0.1, "elders": 0.16, "traditional": 0.45}) -> Appearance:
 	var a := Appearance.new()

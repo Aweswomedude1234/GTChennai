@@ -1,19 +1,20 @@
 {
   "kutchery_traffic": {
     "adapter": "llvmpipe (LLVM 20.1.2, 256 bits)",
-    "chunk_gen_ms": 74.857,
-    "chunks_far": 149,
-    "chunks_near": 15,
-    "draw_calls": 1423,
+    "chunk_gen_ms": 49.831,
+    "chunks_far": 100,
+    "chunks_near": 13,
+    "draw_calls": 776,
     "fps": 1.0,
-    "max_upload_ms": 1.848,
+    "max_upload_ms": 4.961,
     "npcs": 0,
-    "objects": 1953,
-    "primitives": 9427071,
-    "static_mem_mb": 245.973879814148,
-    "traffic": 113,
-    "video_mem_mb": 1282.21459960938,
-    "wait_frames": 329,
-    "wall_ms": 746578
+    "objects": 1078,
+    "primitives": 11755776,
+    "rss_mb": 5706.49609375,
+    "static_mem_mb": 249.408121109009,
+    "traffic": 216,
+    "video_mem_mb": 1333.32046508789,
+    "wait_frames": 228,
+    "wall_ms": 589491
   }
 }

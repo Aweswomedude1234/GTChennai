@@ -19,6 +19,7 @@ class Out:
 	var deco := MB.new(false)     # generic-material unique geometry (cables, walls, breakers, drains)
 	var posters := MB.new(false)  # poster-material quads
 	var kolams := MB.new(false)   # kolam decals
+	var people: Array = []        # [Vector3 p, yaw, clip, seed]: vendors, tea drinkers (registered with the crowd)
 
 func _init(p: CityPack) -> void:
 	pack = p
@@ -151,6 +152,43 @@ func _precompute() -> void:
 					next_bump = here + rnd.range_f(80.0, 150.0) * (1.0 if rank <= 2 else 1.6)
 			acc += L
 			if acc > 1e7: break
+		# banners strung across busy roads (political flex, festival greetings) and pennant strings
+		if rank >= 3:
+			var tot := 0.0
+			for i in n - 1: tot += Vector2(P[i * 2 + 2] - P[i * 2], P[i * 2 + 3] - P[i * 2 + 1]).length()
+			var at := rnd.range_f(30.0, 90.0)
+			while at < tot - 10.0:
+				var acc2 := 0.0
+				for i in n - 1:
+					var a := Vector2(P[i * 2], P[i * 2 + 1]); var b := Vector2(P[i * 2 + 2], P[i * 2 + 3])
+					var L := a.distance_to(b)
+					if acc2 + L >= at and L > 0.5:
+						var t := (b - a) / L
+						var pm := a + t * (at - acc2)
+						_add(pm.x, pm.y, {"t": "banner" if rnd.next() < 0.6 else "pennants", "p": pm, "dir": t, "w": float(r.w) + 2.0 * fw + 0.8, "seed": rnd.seed_int()})
+						break
+					acc2 += L
+				at += rnd.range_f(70.0, 160.0)
+	# flex hoardings on junction corners of busy roads (birthday wishes, film releases, party flex)
+	for ji in pack.region.junctions.size():
+		var jn: Dictionary = pack.region.junctions[ji]
+		var best := -1; var bw := 0.0
+		for rv in jn.roads:
+			var rd: Dictionary = roads[int(rv)]
+			if int(rd.rank) >= 3 and float(rd.w) > bw: bw = float(rd.w); best = int(rv)
+		if best < 0: continue
+		var jr := Rng.new(int(jn.id) ^ 0x40A2)
+		if jr.next() > 0.45: continue
+		var rd: Dictionary = roads[best]
+		var P: Array = rd.pts
+		var jp := Vector2(jn.p[0], jn.p[1])
+		var first := Vector2(P[0], P[1]).distance_to(jp) < Vector2(P[P.size() - 2], P[P.size() - 1]).distance_to(jp)
+		var q := Vector2(P[2], P[3]) if first else Vector2(P[P.size() - 4], P[P.size() - 3])
+		var along := (q - jp).normalized()
+		var side := Vector2(-along.y, along.x) * (1.0 if jr.next() < 0.5 else -1.0)
+		var hp := jp + along * (bw * 0.5 + 6.0) + side * (bw * 0.5 + float(foot_w.get(best, 0.0)) + 1.6)
+		var face := -along   # faces traffic arriving at the junction
+		_add(hp.x, hp.y, {"t": "hoarding", "p": hp, "yaw": atan2(face.x, face.y), "seed": jr.seed_int()})
 
 # ---------------------------------------------------------------------------------------------
 func build_chunk(key: String, _center: Vector2, ctx: BuildingGen.Ctx) -> void:
@@ -177,6 +215,12 @@ func build_chunk(key: String, _center: Vector2, ctx: BuildingGen.Ctx) -> void:
 				for q in 2 + int(cr.next() * 3.0):
 					var sp: Vector2 = it.p + Vector2(cr.range_f(-2.0, 2.0), cr.range_f(1.2, 2.4) * (1.0 if cr.next() < 0.5 else -1.0))
 					_inst(o, "stool", _xf(sp, 0.0, cr.next() * TAU), Rng.hex_lin(cr.pick(["#c62828", "#1565c0", "#f5f5f5"])))
+			"banner": _banner(o, it, false)
+			"pennants": _banner(o, it, true)
+			"hoarding":
+				var hr := Rng.new(it.seed)
+				_inst(o, "hoarding", _xf(it.p, 0.0, it.yaw))
+				_poster_quad(o, Vector3(it.p.x, 4.4, it.p.y), it.yaw, 3.2, 4.2, int(hr.next() * 32.0), 0, hr.next() * 0.4, -0.085)
 			"boat":
 				var br := Rng.new(it.seed)
 				_inst(o, "boat", _xf(it.p, -0.25, it.yaw + (PI if br.next() < 0.5 else 0.0)), Rng.hex_lin(br.pick(["#1565c0", "#2e7d32", "#c62828", "#f9a825", "#00838f", "#f5f5f5"])))
@@ -311,7 +355,29 @@ func _shop_frontage(o: Out, f: Dictionary, _ctx: BuildingGen.Ctx) -> void:
 			dist = maxf(1.6, near.d - float(rr.w) * 0.5 + 0.9)
 	var s := 0.6
 	var fill := r.range_f(0.45, 0.9)
+	# a footpath vendor on a third of busy frontages: fruit cart / flowers / tender coconut / tea,
+	# often under a big striped umbrella, with the vendor and a customer or two
+	var vend_s := -100.0
+	var rank: int = int(pack.region.roads[road_i].rank) if road_i >= 0 else 0
+	if rank >= 2 and L > 5.0 and r.next() < (0.45 if rank >= 3 else 0.25):
+		vend_s = r.range_f(1.5, L - 1.5)
+		var vp := a + t * vend_s + nrm * maxf(dist - 0.9, 1.2)
+		var rot := atan2(nrm.x, nrm.y)
+		var kind: String = r.pick(["fruit_cart", "fruit_cart", "flower_mat", "coconuts", "cart"])
+		var cols := ["#c62828", "#1565c0", "#2e7d32", "#f9a825", "#6a1b9a", "#ef6c00", "#00838f"]
+		_inst(o, kind, _xf(vp, 0.0, rot + PI * 0.5 + r.range_f(-0.15, 0.15)), Rng.hex_lin(r.pick(cols)) if kind == "cart" else Color(1, 1, 1))
+		if kind != "cart" and r.next() < 0.7:
+			_inst(o, "umbrella", _xf(vp + t * 0.3, 0.0, r.next() * TAU), Rng.hex_lin(r.pick(cols)))
+		if kind == "cart": o.lights.append({"p": Vector3(vp.x, 2.1, vp.y), "kind": "tube"})
+		var vendor_p := vp - nrm * 0.75 + t * r.range_f(-0.5, 0.5)
+		o.people.append([Vector3(vendor_p.x, 0.0, vendor_p.y), atan2(-nrm.x, -nrm.y) + PI, "idle" if r.next() < 0.6 else "talk", r.seed_int()])
+		for k in int(r.next() * 3.0):
+			var cp := vp + nrm * r.range_f(0.9, 1.4) + t * r.range_f(-1.0, 1.0)
+			o.people.append([Vector3(cp.x, 0.0, cp.y), atan2(nrm.x, nrm.y) + PI + r.range_f(-0.4, 0.4), "talk" if r.next() < 0.5 else "idle", r.seed_int()])
 	while s < L - 0.5:
+		if absf(s - vend_s) < 1.8:
+			s += 0.8
+			continue
 		if r.next() < fill:
 			var p := a + t * s + nrm * (dist - 0.2 + r.next() * 0.3)
 			var ang := atan2(-nrm.x, -nrm.y) + r.range_f(0.35, 0.65) * (1.0 if r.next() < 0.8 else -1.0)
@@ -324,6 +390,43 @@ func _shop_frontage(o: Out, f: Dictionary, _ctx: BuildingGen.Ctx) -> void:
 	if r.next() < 0.6:
 		var p := a + t * r.range_f(0.3, maxf(0.4, L - 0.3)) + nrm * 0.03
 		_poster_quad(o, Vector3(p.x, 1.4, p.y), atan2(nrm.x, nrm.y), 0.55, 0.75, int(r.next() * 32.0), 0, r.next() * 0.6)
+
+## a banner (or a string of pennants) across the road between two bamboo poles
+func _banner(o: Out, it: Dictionary, pennants: bool) -> void:
+	var r := Rng.new(it.seed)
+	var d: Vector2 = it.dir
+	var nn := Vector2(-d.y, d.x)
+	var half: float = it.w * 0.5
+	var p0: Vector2 = it.p - nn * half; var p1: Vector2 = it.p + nn * half
+	var bamboo := Rng.hex_lin("#a8885a")
+	var h := r.range_f(5.0, 6.2)
+	for pp in [p0, p1]:
+		o.deco.tube(Vector3(pp.x, 0.0, pp.y), Vector3(pp.x, h + 0.4, pp.y), 0.045, 5, bamboo, Vector4(GM.WOOD, 0.9, 0, 0))
+	var A := Vector3(p0.x, h, p0.y); var B := Vector3(p1.x, h, p1.y)
+	o.deco.cable(A, B, 0.25 if pennants else 0.05, 0.008, Rng.hex_lin("#2a2a2a"), Vector4(GM.RUBBER, 0.8, 0, 0))
+	var rot := atan2(d.x, d.y)
+	if pennants:
+		var cols := ["#c62828", "#f9a825", "#2e7d32", "#1565c0", "#f5f5f5", "#ef6c00", "#ad1457"]
+		var n := int(it.w / 0.45)
+		for k in n:
+			var t0 := (k + 0.1) / n; var t1 := (k + 0.9) / n
+			var a := A.lerp(B, t0) - Vector3(0, sin(t0 * PI) * 0.25, 0)
+			var b := A.lerp(B, t1) - Vector3(0, sin(t1 * PI) * 0.25, 0)
+			var tip := (a + b) * 0.5 - Vector3(0, 0.32, 0)
+			var col := Rng.hex_lin(cols[(k + int(it.seed)) % cols.size()])
+			o.deco.tri(a, b, tip, Vector3(d.x, 0, d.y), col, Vector4(GM.TARP, 0.8, 0, 0))
+			o.deco.tri(b, a, tip, Vector3(-d.x, 0, -d.y), col, Vector4(GM.TARP, 0.8, 0, 0))
+		return
+	var bw := minf(it.w - 1.2, r.range_f(5.5, 8.0))
+	var bh := bw / 4.0
+	var c := Vector3(it.p.x, h - bh * 0.5 - 0.05, it.p.y)
+	var cell := int(r.next() * 24.0)
+	# both faces: one for each traffic direction
+	_poster_quad(o, c, rot, bw, bh, cell, 1, r.next() * 0.3, 0.004)
+	_poster_quad(o, c, rot + PI, bw, bh, (cell + 5) % 24, 1, r.next() * 0.3, 0.004)
+	for sx in [-0.5, 0.5]:
+		var e: Vector3 = Vector3(it.p.x, 0, it.p.y) + Vector3(nn.x, 0, nn.y) * bw * sx
+		o.deco.cable(Vector3(e.x, h, e.z), Vector3(e.x, h - bh - 0.05, e.z), 0.0, 0.006, Rng.hex_lin("#2a2a2a"), Vector4(GM.RUBBER, 0.8, 0, 0), 1)
 
 ## residential frontage: compound wall + gate on the setback line, kolam at the gate, plants,
 ## political wall-writing on 15% of walls

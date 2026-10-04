@@ -62,16 +62,21 @@ func _run(shots: Array) -> void:
 		while frames < 3000:
 			await get_tree().process_frame
 			frames += 1
+			if frames % 25 == 0:
+				print("[harness] wait f%d rss %.0f nodes %d near %d crowd_near %s traffic %s" % [frames, rss_mb(), Performance.get_monitor(Performance.OBJECT_NODE_COUNT), w.streamer.stats.near, w.crowd.stats.near if w.crowd else -1, w.traffic.stats if w.traffic else {}])
 			if frames > 10 and w.streamer.is_idle(): break
+		print("[harness] streamed: rss %.0f MB" % rss_mb())
 		# populate the crowd around the camera before the shot (fast-forward the sim a few seconds)
-		if w.crowd:
-			w.crowd.focus = cam.position
-			for k in 40: w.crowd.update(0.25, w.clock.hour)
 		if w.traffic:
 			w.traffic.focus = cam.position
 			w.traffic.clear()
 			w.traffic.populate(w.clock.hour)
 			for k in 30: w.traffic.update(0.2, w.clock.hour)
+		print("[harness] traffic: rss %.0f MB" % rss_mb())
+		if w.crowd:
+			w.crowd.focus = cam.position
+			for k in 40: w.crowd.update(0.25, w.clock.hour)
+		print("[harness] crowd: rss %.0f MB" % rss_mb())
 		for i in int(s.get("settle", 12)): await get_tree().process_frame
 		var stats := _frame_stats()
 		stats["npcs"] = w.crowd.stats.agents if w.crowd else 0
@@ -159,9 +164,18 @@ func _test(s: Dictionary, w: World) -> void:
 	print("[harness] %s → %s %s" % [s.name, path, JSON.stringify(stats)])
 	if veh: veh.queue_free()
 
+static func rss_mb() -> float:
+	var f := FileAccess.open("/proc/self/status", FileAccess.READ)
+	if f == null: return 0.0
+	for i in 80:
+		var l := f.get_line()
+		if l.begins_with("VmRSS"): return float(l.split(":")[1].strip_edges().split(" ")[0]) / 1024.0
+	return 0.0
+
 func _frame_stats() -> Dictionary:
 	var w: World = game.world
 	return {
+		"rss_mb": rss_mb(),
 		"fps": Engine.get_frames_per_second(),
 		"draw_calls": RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME),
 		"primitives": RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_PRIMITIVES_IN_FRAME),
