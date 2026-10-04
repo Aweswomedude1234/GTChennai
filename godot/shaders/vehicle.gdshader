@@ -34,11 +34,11 @@ float aaband(float y, float lo, float hi) {
 }
 
 void fragment() {
-	float n1 = fbm2(opos.xz * 3.1 + opos.y * 2.0);
+	float n1 = fbm2(opos.xz * 1.3 + opos.y * 0.9);
 	float n2 = vnoise(opos.xy * 23.0 + opos.z * 7.0);
 	// dust: heavier low on the body and on upward faces; streaks under rain
 	float low = 1.0 - smoothstep(0.15, 0.9 + dirt * 0.3, opos.y);
-	float dust = clamp((low * 0.8 + max(onrm.y, 0.0) * 0.35) * dirt * (0.55 + n1 * 0.9), 0.0, 1.0) * (1.0 - wet * 0.6);
+	float dust = clamp((low * 0.8 + max(onrm.y, 0.0) * 0.12) * dirt * (0.6 + n1 * 0.6), 0.0, 1.0) * (1.0 - wet * 0.6);
 	vec3 dust_col = vec3(0.47, 0.40, 0.31);
 	if (part == 0) {
 		float b = max(aaband(opos.y, band.x, band.y), aaband(opos.y, band.z, band.w));

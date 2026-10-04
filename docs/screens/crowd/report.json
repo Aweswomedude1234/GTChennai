@@ -1,0 +1,20 @@
+{
+  "mada_evening": {
+    "adapter": "llvmpipe (LLVM 20.1.2, 256 bits)",
+    "chunk_gen_ms": 62.62,
+    "chunks_far": 93,
+    "chunks_near": 14,
+    "draw_calls": 1420,
+    "fps": 1.0,
+    "max_upload_ms": 12.701,
+    "npcs": 1500,
+    "objects": 1730,
+    "primitives": 11316616,
+    "rss_mb": 5106.77734375,
+    "static_mem_mb": 265.107131958008,
+    "traffic": 166,
+    "video_mem_mb": 1445.33532714844,
+    "wait_frames": 218,
+    "wall_ms": 1145286
+  }
+}

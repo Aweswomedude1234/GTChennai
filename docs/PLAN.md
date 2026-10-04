@@ -36,12 +36,12 @@ Legend: [x] done · [~] partial · [ ] todo
 - [ ] Density audit tool (BRIEF §15 per-100 m quotas); screenshot review against refs
 
 ## Phase 3: Life
-- [~] Realistic humans (MPFB + CMU mocap), near skeletal tier + VAT mid tier
+- [~] Realistic humans (MPFB + MakeHuman CC0 skins/hair/clothes + CMU mocap), near skeletal tier + VAT mid tier
 - [~] Pedestrian sim on footpaths and road edges, crossing with a raised hand, idle behaviours, schedules
-- [ ] Traffic sim on the OSM graph: gap-seeking, two-wheeler filtering, horns, signals, jams
-- [ ] Vehicle fleet models (35+) with liveries and wear
+- [~] Traffic sim on the OSM graph: gap-seeking, two-wheeler filtering, junction turns, riders (horn audio, signals, jams todo)
+- [~] Vehicle fleet models (35+) with liveries and wear — 6 types / 15 variants, per-instance paint, dust and age
 - [ ] Animals: dogs, cows, crows, goats
-- [ ] Vendors and stalls with calls
+- [~] Vendors and stalls with calls (stalls, umbrellas, vendors placed; calls todo)
 - [ ] Ambience audio layers, spatial audio, radio (2+ stations)
 - [ ] Weather: rain, wet roads, waterlogging, monsoon, power cuts
 - [ ] Acceptance: 1,500+ visible people and jams at target fps

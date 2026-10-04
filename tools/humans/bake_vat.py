@@ -50,6 +50,13 @@ def main(ratio, clips):
         objs = import_glb(os.path.join(HUM, spec["id"] + ".glb"))
         rig = next(o for o in objs if o.type == "ARMATURE")
         meshes = [o for o in objs if o.type == "MESH" and o.name.split(".")[0] in PART]
+        # one UV layer per part, same name, so the merged mesh has UV0 = texture UV and UV1 = VAT
+        # (MakeHuman assets come with differently named UV maps, which join would keep apart)
+        for o in meshes:
+            uvs = o.data.uv_layers
+            while len(uvs) > 1: uvs.remove(uvs[-1])
+            if len(uvs) == 0: uvs.new(name="UVMap")
+            uvs[0].name = "UVMap"
         # part id into vertex colour, then merge
         for o in meshes:
             pid = PART[o.name.split(".")[0]]

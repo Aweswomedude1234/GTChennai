@@ -643,6 +643,15 @@
      0.0242
     ]
    },
+   "hair": {
+    "file": "braid01_diffuse.png",
+    "mean": [
+     0.004,
+     0.0033,
+     0.0027
+    ],
+    "lum": 0.0796
+   },
    "brows": {
     "file": "eyebrow008.png",
     "mean": [

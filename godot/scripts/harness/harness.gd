@@ -12,6 +12,8 @@ var out_dir: String
 
 func start(g: Node) -> void:
 	game = g
+	# lavapipe keeps every compiled pipeline in RAM; TAA's motion-vector passes nearly double them
+	if Settings.has_arg("lowmem") and not Settings.has_arg("taa"): get_viewport().use_taa = false
 	var set_name := Settings.arg("shot")
 	var sets = CityPack.load_json("res://harness/shots.json")
 	var shots: Array = sets.get(set_name, [])

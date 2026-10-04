@@ -266,6 +266,40 @@ def param_shell(name, stations, profile, region, mats, step_y=0.045, prof_subs=N
     smooth(ob)
     return ob
 
+
+def decal(target, outline, axis, name, material, offset=0.004, cuts=5):
+    """A panel that hugs the target's surface: `outline` [(u, v)] is a polygon in the plane seen
+    from `axis` ("+y" front: u=x, v=z; "-y" rear; "+x"/"-x" sides: u=y, v=z), triangulated,
+    densified and ray-projected onto the shell, then lifted `offset` along the surface normal.
+    Clean, crisp lamp/grille/glass shapes on curved bodywork without booleans."""
+    from mathutils.bvhtree import BVHTree
+    dg = bpy.context.evaluated_depsgraph_get()
+    bvh = BVHTree.FromObject(target, dg)
+    bm = bmesh.new()
+    vs = [bm.verts.new((u, v, 0.0)) for u, v in outline]
+    f = bm.faces.new(vs)
+    bmesh.ops.triangulate(bm, faces=[f])
+    bmesh.ops.subdivide_edges(bm, edges=bm.edges[:], cuts=cuts, use_grid_fill=True)
+    bmesh.ops.triangulate(bm, faces=bm.faces[:])
+    sgn = 1.0 if axis[0] == "+" else -1.0
+    ax = axis[1]
+    dirv = Vector((0, -sgn, 0)) if ax == "y" else Vector((-sgn, 0, 0))
+    miss = []
+    for v in bm.verts:
+        u, w = v.co.x, v.co.y
+        o = Vector((u, sgn * 8.0, w)) if ax == "y" else Vector((sgn * 8.0, u, w))
+        hit = bvh.ray_cast(o, dirv)
+        if hit[0] is None: miss.append(v); continue
+        n = hit[1] if hit[1].dot(dirv) < 0 else -hit[1]
+        v.co = hit[0] + n * offset
+    if miss: bmesh.ops.delete(bm, geom=miss, context="VERTS")
+    bm.normal_update()
+    for fc in bm.faces:
+        if fc.normal.dot(dirv) > 0: fc.normal_flip()
+    ob = new_obj(name, bm, [material])
+    smooth(ob)
+    return ob
+
 # ------------------------------------------------------------------------------------------ wheels
 def wheel(name, R, width, rim_r, M, spokes=5, style="alloy", tread=True):
     """tyre (with tread blocks) + rim + hub, axle along X, origin at the hub"""
@@ -455,15 +489,28 @@ def build_auto(variant=0):
 
 # ========================================================================================= HATCHBACK
 def build_hatch(variant=0):
-    """small hatchback (Alto/Swift class, fictional 'Mithra'): 3.72 × 1.64 × 1.50 m"""
+    """hatchbacks (variants 0, 1: Swift/Alto class) and compact sedans (variants 2, 3: Dzire class,
+    the Chennai call-taxi), fictional make 'Mithra'. Hatch 3.72 × 1.64 × 1.50 m; sedan 3.99 m."""
+    sedan = variant >= 2
     cols = ["#f2f2f0", "#c8c8c8", "#8a8a8a", "#7a1414", "#1c3a6a", "#2a2a2a", "#d8d0b8", "#b8b8ba", "#5e2a6e"]
     M = std_mats(cols[variant % len(cols)], "#1a1a1a")
     # stations: y, z_bottom, z_belt, z_top, half-width at belt, half-width at top
-    S = [(-1.86, 0.36, 0.66, 0.74, 0.62, 0.5), (-1.83, 0.3, 0.88, 1.0, 0.76, 0.66), (-1.74, 0.27, 0.95, 1.3, 0.79, 0.6), (-1.6, 0.25, 0.96, 1.44, 0.8, 0.62),
-         (-1.1, 0.24, 0.97, 1.49, 0.81, 0.63), (-0.4, 0.24, 0.97, 1.5, 0.81, 0.64), (0.15, 0.24, 0.96, 1.47, 0.81, 0.63), (0.48, 0.25, 0.94, 1.18, 0.8, 0.69),
-         (0.75, 0.26, 0.92, 0.99, 0.79, 0.74), (1.2, 0.28, 0.87, 0.92, 0.78, 0.72), (1.6, 0.3, 0.8, 0.84, 0.76, 0.68), (1.8, 0.34, 0.68, 0.74, 0.7, 0.56), (1.87, 0.4, 0.56, 0.6, 0.58, 0.45)]
-    # insert stations exactly on the glass / pillar edges so material boundaries are clean lines
-    cuts = [0.74, 0.70, 0.24, 0.2, -0.22, -0.3, -1.05, -1.1, -1.5, -1.64, -1.8]
+    front = [(0.15, 0.24, 0.96, 1.47, 0.81, 0.63), (0.48, 0.25, 0.94, 1.18, 0.8, 0.69), (0.75, 0.26, 0.92, 0.99, 0.79, 0.74),
+             (1.2, 0.28, 0.87, 0.92, 0.78, 0.72), (1.55, 0.3, 0.82, 0.86, 0.765, 0.69), (1.75, 0.32, 0.75, 0.79, 0.73, 0.62),
+             (1.84, 0.36, 0.66, 0.69, 0.66, 0.52), (1.885, 0.42, 0.57, 0.59, 0.52, 0.4)]
+    if not sedan:
+        rear = [(-1.86, 0.36, 0.66, 0.74, 0.62, 0.5), (-1.83, 0.3, 0.88, 1.0, 0.76, 0.66), (-1.74, 0.27, 0.95, 1.3, 0.79, 0.6), (-1.6, 0.25, 0.96, 1.44, 0.8, 0.62),
+                (-1.1, 0.24, 0.97, 1.49, 0.81, 0.63), (-0.4, 0.24, 0.97, 1.5, 0.81, 0.64)]
+        cuts = [0.74, 0.70, 0.24, 0.2, -0.22, -0.3, -1.05, -1.1, -1.5, -1.64, -1.8]
+        y_tail, y_glass0, y_side0 = -1.86, -1.8, -1.5
+        wheels_y = (1.22, -1.2)
+    else:
+        rear = [(-2.12, 0.4, 0.66, 0.7, 0.6, 0.5), (-2.08, 0.32, 0.9, 0.97, 0.75, 0.68), (-1.95, 0.28, 0.95, 1.03, 0.79, 0.73), (-1.6, 0.26, 0.96, 1.05, 0.8, 0.72),
+                (-1.45, 0.25, 0.965, 1.16, 0.8, 0.68), (-1.0, 0.24, 0.97, 1.46, 0.81, 0.63), (-0.4, 0.24, 0.97, 1.5, 0.81, 0.64)]
+        cuts = [0.74, 0.70, 0.24, 0.2, -0.22, -0.3, -0.92, -0.97, -1.02, -1.42]
+        y_tail, y_glass0, y_side0 = -2.12, -1.42, -0.92
+        wheels_y = (1.22, -1.25)
+    S = rear + front
     def lerp_st(y):
         for a_, b_ in zip(S[:-1], S[1:]):
             if a_[0] <= y <= b_[0]:
@@ -475,52 +522,60 @@ def build_hatch(variant=0):
         return [(0.0, zb - 0.01), (wb * 0.78, zb), (wb * 0.97, zb + 0.08), (wb, zb + (zbelt - zb) * 0.55), (wb * 0.985, zbelt),
                 (wb * 0.95, zbelt + 0.02), (wt + (wb * 0.95 - wt) * 0.4, zbelt + (zt - zbelt) * 0.5), (wt, zt - 0.07), (wt * 0.85, zt - 0.012), (0.0, zt)]
     def region(y, seg, sub, c, n):
-        if seg <= 1: return "trim"                                   # underbody, sill
-        if seg == 2 and sub == 0 and (y > 1.6 or y < -1.7): return "trim"   # bumper lower lips
-        if c.z < 0.42 and y > 1.8: return "trim"
+        if seg <= 1: return "trim" if y_tail + 0.25 < y < 1.65 else None   # sills (bumpers stay body colour)
         if seg in (5, 6):
-            if not (-1.5 < y < 0.74): return None
+            if not (y_side0 < y < 0.74): return None
             if (seg == 5 and sub == 0) or (seg == 6 and sub == 2): return "trim"  # rubber seals
-            if -0.3 < y < -0.22 or -1.1 < y < -1.05: return "trim"      # B pillar, quarter divider
+            if -0.3 < y < -0.22: return "trim"                         # B pillar
+            if not sedan and -1.1 < y < -1.05: return "trim"           # quarter-glass divider
+            if sedan and y < -0.92: return None
             return "glass"
         if seg == 8 and 0.2 < y < 0.74:
             return "trim" if (y < 0.24 or y > 0.70 or sub == 0) else "glass"      # windscreen + frit
-        if seg == 8 and -1.8 < y < -1.64:
+        if not sedan and seg == 8 and -1.8 < y < -1.64:
             return "trim" if (y < -1.78 or y > -1.66 or sub == 0) else "glass"   # tailgate glass
+        if sedan and seg == 8 and -1.42 < y < -0.97:
+            return "trim" if (y < -1.38 or y > -1.02 or sub == 0) else "glass"   # rear window
         return None
-    body = param_shell("shell", S, prof, region, M, step_y=0.04, prof_subs=[3, 2, 3, 3, 1, 3, 3, 2, 4])
+    body = param_shell("shell", S, prof, region, M, step_y=0.04, prof_subs=[3, 2, 3, 3, 1, 3, 3, 2, 4], cap_mat="paint")
     for sx in (-0.74, 0.74):
-        for sy in (1.22, -1.2):
+        for sy in wheels_y:
             boolean_cut(body, cylinder_x("arch", (sx, sy, 0.29), 0.36, 0.5))
     parts = [body]
+    # front fascia: swept headlamp clusters, grille, lower intake, fog lamps (decals hugging the nose)
     for sx in (-1, 1):
-        for sy in (1.22, -1.2):
-            arc = [Vector((sx * 0.8, sy + 0.37 * math.cos(a), 0.29 + 0.37 * math.sin(a))) for a in [math.pi * (0.02 + 0.96 * k / 16) for k in range(17)]]
-            parts.append(tube("arch_lip", arc, 0.018, [M["trim"]], seg=6))
-    # inner arch liners (black) so you can't see into the shell
-    for sx in (-0.62, 0.62):
-        for sy in (1.22, -1.2):
-            parts.append(lathe("liner", [(-0.12, 0.35), (0.12, 0.35)], [M["trim"]], seg=24))
-            parts[-1].location = (sx, sy, 0.29)
-    # headlamps (swept-back clusters), grille, fog lamps, tail lamps, plates, mirrors, handles
-    for sx in (-1, 1):
-        hl = rbox("headlamp", (sx * 0.5, 1.78, 0.74), (0.2, 0.08, 0.06), [M["lamp_head"]], 0.03)
-        hl.rotation_euler.z = sx * 0.35
-        parts.append(hl)
-        parts.append(rbox("tail", (sx * 0.66, -1.8, 0.92), (0.1, 0.05, 0.12), [M["lamp_tail"]], 0.02))
+        hl = [(sx * 0.36, 0.71), (sx * 0.62, 0.76), (sx * 0.75, 0.73), (sx * 0.74, 0.65), (sx * 0.56, 0.615), (sx * 0.38, 0.63)]
+        if sx < 0: hl = hl[::-1]
+        parts.append(decal(body, hl, "+y", "headlamp", M["lamp_head"], 0.005, 4))
+        parts.append(decal(body, [(sx * 0.65, 0.42), (sx * 0.72, 0.42), (sx * 0.72, 0.47), (sx * 0.65, 0.47)][::(1 if sx > 0 else -1)], "+y", "fog", M["lamp_head"], 0.004, 2))
+        # tail lamp clusters wrapping the rear corners
+        tl = [(sx * 0.48, 0.97 if not sedan else 0.92), (sx * 0.72, 0.99 if not sedan else 0.93), (sx * 0.76, 0.84), (sx * 0.62, 0.82)]
+        if sx > 0: tl = tl[::-1]
+        parts.append(decal(body, tl, "-y", "tail", M["lamp_tail"], 0.005, 3))
         parts.append(rbox("mirror", (sx * 0.86, 0.55, 1.02), (0.06, 0.04, 0.05), [M["paint"]], 0.02))
         parts.append(rbox("mirror_arm", (sx * 0.81, 0.58, 1.0), (0.03, 0.02, 0.015), [M["trim"]], 0.005))
         for sy in (0.15, -0.65):
             parts.append(rbox("handle", (sx * 0.815, sy, 0.92), (0.01, 0.07, 0.012), [M["trim"]], 0.004))
         parts.append(rbox("ind_side", (sx * 0.82, 1.0, 0.8), (0.006, 0.03, 0.012), [M["lamp_ind"]], 0.003))
-    parts.append(rbox("grille", (0, 1.86, 0.6), (0.36, 0.03, 0.06), [M["trim"]], 0.02))
-    parts.append(rbox("grille_low", (0, 1.83, 0.42), (0.42, 0.03, 0.05), [M["trim"]], 0.02))
-    parts.append(rbox("plate_f", (0, 1.88, 0.5), (0.25, 0.01, 0.055), [M["plate"]], 0.005))
-    parts.append(rbox("plate_r", (0, -1.86, 0.62), (0.25, 0.01, 0.055), [M["plate"]], 0.005))
+        for sy in wheels_y:
+            arc = [Vector((sx * 0.8, sy + 0.37 * math.cos(a), 0.29 + 0.37 * math.sin(a))) for a in [math.pi * (0.02 + 0.96 * k / 16) for k in range(17)]]
+            parts.append(tube("arch_lip", arc, 0.016, [M["trim"]], seg=6))
+    parts.append(decal(body, [(-0.34, 0.63), (0.34, 0.63), (0.3, 0.52), (-0.3, 0.52)], "+y", "grille", M["trim"], 0.004, 4))
+    # door shut lines and the lower bumper diffuser
+    door_lines = [0.62, -0.26] + ([-1.02] if not sedan else [-0.95])
+    for side in ("+x", "-x"):
+        for yl in door_lines:
+            parts.append(decal(body, [(yl - 0.004, 0.33), (yl + 0.004, 0.33), (yl + 0.004 + (0.06 if yl > 0 else 0.0), 0.93), (yl - 0.004 + (0.06 if yl > 0 else 0.0), 0.93)][::(1 if side == "+x" else -1)], side, "shutline", M["trim"], 0.002, 1))
+    parts.append(decal(body, [(0.5, 0.4), (-0.5, 0.4), (-0.46, 0.33), (0.46, 0.33)], "-y", "diffuser", M["trim"], 0.004, 3))
+    parts.append(decal(body, [(-0.33, 0.625), (0.33, 0.625), (0.33, 0.615), (-0.33, 0.615)], "+y", "grille_chrome", M["chrome"], 0.006, 2))
+    parts.append(decal(body, [(-0.48, 0.45), (0.48, 0.45), (0.42, 0.36), (-0.42, 0.36)], "+y", "intake", M["trim"], 0.004, 4))
+    parts.append(decal(body, [(-0.25, 0.505), (0.25, 0.505), (0.25, 0.455), (-0.25, 0.455)], "+y", "plate_f", M["plate"], 0.008, 2))
+    pz = 0.66 if not sedan else 0.72
+    parts.append(decal(body, [(0.25, pz - 0.055), (-0.25, pz - 0.055), (-0.25, pz + 0.055), (0.25, pz + 0.055)], "-y", "plate_r", M["plate"], 0.008, 2))
     parts.append(rbox("wiper_f", (0.12, 0.62, 1.02), (0.28, 0.008, 0.008), [M["trim"]], 0.003))
-    parts.append(rbox("wiper_r", (0, -1.78, 1.18), (0.18, 0.008, 0.008), [M["trim"]], 0.003))
-    parts.append(rbox("antenna", (0.2, -1.2, 1.55), (0.006, 0.006, 0.12), [M["trim"]], 0.0))
-    # interior silhouette visible through glass: seats, dash, steering wheel
+    if not sedan: parts.append(rbox("wiper_r", (0, -1.78, 1.18), (0.18, 0.008, 0.008), [M["trim"]], 0.003))
+    parts.append(rbox("antenna", (0.2, -0.9, 1.55), (0.006, 0.006, 0.12), [M["trim"]], 0.0))
+    # interior silhouette visible through glass: seats, dash, steering wheel (right-hand drive)
     parts.append(rbox("dash", (0, 0.45, 0.9), (0.72, 0.18, 0.08), [M["interior"]], 0.04))
     for sx in (-0.38, 0.38):
         parts.append(rbox("seat_f", (sx, -0.15, 0.62), (0.24, 0.24, 0.06), [M["interior"]], 0.05))
@@ -528,13 +583,13 @@ def build_hatch(variant=0):
     parts.append(rbox("seat_r", (0, -1.0, 0.62), (0.66, 0.24, 0.06), [M["interior"]], 0.05))
     parts.append(rbox("seat_rb", (0, -1.22, 0.92), (0.66, 0.06, 0.26), [M["interior"]], 0.05))
     sw = lathe("steering", [(-0.015, 0.17), (-0.015, 0.19), (0.015, 0.19), (0.015, 0.17)], [M["trim"]], seg=24)
-    sw.rotation_euler = (0, 0, math.pi / 2); sw.location = (-0.38, 0.28, 1.0)
+    sw.rotation_euler = (0, 0, math.pi / 2); sw.location = (0.38, 0.28, 1.0)
     bpy.ops.object.select_all(action="DESELECT"); sw.select_set(True); bpy.context.view_layer.objects.active = sw
     bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)
     sw.rotation_euler.x = -0.5
     parts.append(sw)
     ob = join(parts, "body")
-    wheels = [(-0.71, 1.22, 0.29), (0.71, 1.22, 0.29), (-0.71, -1.2, 0.29), (0.71, -1.2, 0.29)]
+    wheels = [(-0.71, wheels_y[0], 0.29), (0.71, wheels_y[0], 0.29), (-0.71, wheels_y[1], 0.29), (0.71, wheels_y[1], 0.29)]
     return ob, wheels, dict(R=0.29, width=0.165, rim=0.18, style="alloy", spokes=5)
 
 

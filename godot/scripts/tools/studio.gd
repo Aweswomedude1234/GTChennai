@@ -90,6 +90,15 @@ func _ready() -> void:
 				node.add_child(VehicleModel.make(vid, 3))
 				size = {"auto": 2.6, "hatch": 3.4, "bike": 2.0, "scooter": 1.9, "bus": 9.0}[vid]
 				ty = {"bus": 1.6, "hatch": 0.7, "auto": 0.9}.get(vid, 0.6)
+			"v_cars":
+				node = Node3D.new()
+				for i in 2:
+					var inst: Node3D = (load("res://assets/vehicles/hatch_%d.glb" % (i * 2)) as PackedScene).instantiate()
+					var vm := VehicleModel.new(); vm.kind = "hatch"; vm.add_child(inst); vm._collect(inst); vm.recolour(5 + i * 3)
+					vm.position = Vector3((i - 0.5) * 2.2, 0, 0)
+					node.add_child(vm)
+				size = 3.0
+				ty = 0.7
 			"riders":
 				node = Node3D.new()
 				var specs := HumanActor.specs()

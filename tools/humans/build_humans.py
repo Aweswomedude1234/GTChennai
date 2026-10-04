@@ -334,7 +334,7 @@ def build(spec):
     hair_style = spec.get("hair", "short")
     mh_hair = None
     if sex == "m" and hair_style == "short": mh_hair = r.choice(["short01", "short02", "short02", "short04", "short04"])
-    elif hair_style == "plait": mh_hair = "braid01"
+    elif hair_style in ("plait", "bun"): mh_hair = "braid01" if (hair_style == "plait" or age < 0.7 or r.random() < 0.5) else None   # older women keep the bun
     if mh_hair: add(f"hair/{mh_hair}/{mh_hair}.mhclo", "Hair", "hair", M["hair"], True)
     brow = r.choice(["eyebrow001", "eyebrow002", "eyebrow003", "eyebrow004", "eyebrow005", "eyebrow006"] if sex == "m" else ["eyebrow007", "eyebrow008", "eyebrow009", "eyebrow010", "eyebrow011", "eyebrow012"])
     add(f"eyebrows/{brow}/{brow}.mhclo", "Eyebrows", "brows", M["hair"], True, 512)
