@@ -69,6 +69,9 @@ func _run(shots: Array) -> void:
 			if frames > 10 and w.streamer.is_idle(): break
 		print("[harness] streamed: rss %.0f MB" % rss_mb())
 		# populate the crowd around the camera before the shot (fast-forward the sim a few seconds)
+		if w.animals:
+			w.animals.focus = cam.position
+			w.animals.populate(w.clock.hour)
 		if w.traffic:
 			w.traffic.focus = cam.position
 			w.traffic.clear()

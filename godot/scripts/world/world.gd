@@ -57,6 +57,11 @@ func setup(city: String) -> void:
 		crowd.setup(pack)
 		streamer.chunk_near.connect(func(key: String, c: Dictionary) -> void: crowd.add_fixed(key, c.get("people", [])))
 		streamer.chunk_unloaded.connect(func(key: String, _c: Dictionary) -> void: crowd.remove_fixed(key))
+	if not Settings.has_arg("noanimals"):
+		animals = Animals.new()
+		animals.name = "Animals"
+		add_child(animals)
+		animals.setup(pack)
 	if not Settings.has_arg("notraffic"):
 		traffic = Traffic.new()
 		traffic.name = "Traffic"
@@ -110,12 +115,18 @@ var horizon_ready := false
 
 var crowd: Crowd
 var traffic: Traffic
+var animals: Animals
 var obstacles: Array[Vector3] = []   # set by the game: player / player's vehicle
 
 func _process(dt: float) -> void:
+	if animals:
+		animals.focus = Vector3(streamer.focus.x, 0, streamer.focus.y)
+		animals.update(dt, clock.hour)
 	if traffic:   # before the crowd: it draws the far-tier riders this frame
 		traffic.focus = Vector3(streamer.focus.x, 0, streamer.focus.y)
-		traffic.obstacles = obstacles
+		var obs: Array[Vector3] = obstacles.duplicate()
+		if animals: obs.append_array(animals.obstacles)
+		traffic.obstacles = obs
 		traffic.update(dt, clock.hour)
 	if crowd:
 		crowd.focus = Vector3(streamer.focus.x, 0, streamer.focus.y)

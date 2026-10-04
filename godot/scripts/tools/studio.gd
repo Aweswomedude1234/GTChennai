@@ -90,6 +90,20 @@ func _ready() -> void:
 				node.add_child(VehicleModel.make(vid, 3))
 				size = {"auto": 2.6, "hatch": 3.4, "bike": 2.0, "scooter": 1.9, "bus": 9.0}[vid]
 				ty = {"bus": 1.6, "hatch": 0.7, "auto": 0.9}.get(vid, 0.6)
+			"animals":
+				var an := Animals.new()
+				an.setup(null)
+				node = an
+				var k := 0
+				for sp in ["dog", "dog", "dog", "dog", "cow", "cow", "goat", "goat"]:
+					var st: int = [0, 1, 2, 4, 0, 2, 1, 3][k]
+					var cols: Array = Animals.SPECIES[sp].coats
+					an.agents.append({"sp": sp, "p": Vector3((k % 4 - 1.5) * 1.6, 0, (k / 4) * 2.4 - 1.2), "yaw": 0.6, "state": st, "seed": 0.13 * k + 0.05,
+						"col": Color(cols[k % cols.size()]).srgb_to_linear(), "phase": k * 1.3})
+					k += 1
+				an._render()
+				size = 3.4
+				ty = 0.5
 			"v_cars":
 				node = Node3D.new()
 				for i in 2:
