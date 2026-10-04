@@ -1,20 +1,20 @@
 {
   "santhome_traffic": {
     "adapter": "llvmpipe (LLVM 20.1.2, 256 bits)",
-    "chunk_gen_ms": 61.192,
+    "chunk_gen_ms": 72.545,
     "chunks_far": 56,
     "chunks_near": 13,
-    "draw_calls": 1345,
+    "draw_calls": 1477,
     "fps": 1.0,
-    "max_upload_ms": 2.18,
+    "max_upload_ms": 8.44,
     "npcs": 1500,
-    "objects": 1653,
-    "primitives": 14295806,
-    "rss_mb": 4928.62109375,
-    "static_mem_mb": 274.641795158386,
-    "traffic": 196,
-    "video_mem_mb": 1416.59159851074,
-    "wait_frames": 139,
-    "wall_ms": 955675
+    "objects": 1785,
+    "primitives": 14159990,
+    "rss_mb": 4941.56640625,
+    "static_mem_mb": 274.558640480042,
+    "traffic": 183,
+    "video_mem_mb": 1415.59565734863,
+    "wait_frames": 140,
+    "wall_ms": 999397
   }
 }

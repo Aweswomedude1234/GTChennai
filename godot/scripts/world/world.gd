@@ -134,6 +134,7 @@ func _process(dt: float) -> void:
 		var obs: Array[Vector3] = obstacles.duplicate()
 		if animals: obs.append_array(animals.obstacles)
 		traffic.obstacles = obs
+		traffic.night = clock.night_factor
 		traffic.update(dt, clock.hour)
 	if crowd:
 		crowd.focus = Vector3(streamer.focus.x, 0, streamer.focus.y)

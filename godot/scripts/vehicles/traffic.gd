@@ -40,6 +40,7 @@ var _cand_w: Array = []
 var _cand_at := Vector3(1e9, 0, 1e9)
 var _t := 0.0
 var sound: Soundscape                # horns (set by World)
+var night := 0.0                     # SkyClock.night_factor (set by World): headlights on near vehicles
 var crowd: Crowd                     # far-tier riders are drawn by the crowd's VAT MultiMeshes
 var _mm := {}                        # kind → MultiMeshInstance3D (far tier, baked low-detail bodies)
 var _specs: Array = []
@@ -70,7 +71,7 @@ func _hour_f(hour: float) -> float:
 
 ## vehicles per 100 m of road (both directions) at peak, by road rank: arterials are jammed,
 ## residential lanes see the odd bike or auto
-const PER_100M := [0.4, 1.5, 4.0, 10.0, 20.0, 26.0]
+const PER_100M := [0.4, 1.5, 4.0, 12.0, 26.0, 36.0]
 const MAX_AGENTS := 420
 const DENSE_R := 170.0                # roads are filled to their quota within this radius
 
@@ -237,10 +238,14 @@ func _step_all(dt: float) -> void:
 		var tan2: Vector2 = _sample(a.ri, a.s)[1] * a.dir
 		var left := Vector2(tan2.y, -tan2.x)
 		var me: Vector2 = pos2 + left * a.lat
-		for o in obstacles:
+		var peds: Array = crowd.on_road.get(a.ri, []) if crowd else []
+		var n_glob := obstacles.size()
+		for oi in n_glob + peds.size():
+			var o: Vector3 = obstacles[oi] if oi < n_glob else peds[oi - n_glob]
+			var clear_w: float = 1.0 if oi < n_glob else 0.35     # people at the edge only block when in the vehicle's path
 			var rel := Vector2(o.x, o.z) - me
 			var ahead := rel.dot(tan2)
-			if ahead > 0.0 and ahead < 25.0 and absf(rel.dot(left)) < a.w * 0.5 + 1.0:
+			if ahead > 0.0 and ahead < 25.0 and absf(rel.dot(left)) < a.w * 0.5 + clear_w:
 				var g: float = ahead - a.len * 0.5 - 1.2
 				if g < gap: gap = g; v_lead = 0.0
 				if g < 10.0 and a.honk <= 0.0:
@@ -376,6 +381,8 @@ func _pose_node(a: Dictionary) -> void:
 		w.rotation = Vector3(-a.dist / r, steer if front else 0.0, 0.0)
 	vm.set_param("brake", a.brake)
 	vm.set_param("blink", a.blink)
+	var hl: SpotLight3D = body.get_node_or_null("headlight")
+	if hl: hl.light_energy = 3.0 * smoothstep(0.35, 0.7, night) if a.kind != "cycle" else 0.0
 	var eng: AudioStreamPlayer3D = body.get_node_or_null("engine")
 	if eng: eng.pitch_scale = 0.75 + clampf(float(a.v) / float(KINDS[a.kind].v), 0.0, 1.2) * 0.8
 
@@ -491,6 +498,20 @@ func _acquire(a: Dictionary) -> void:
 			w.node.set_meta("r", w.r)
 			w.node.set_meta("front", w.p.z < zmid)
 		body.add_child(Soundscape.engine_player(a.kind))
+		# headlight beam (near tier only; no shadows): what makes night traffic read at all
+		var hl := SpotLight3D.new()
+		hl.name = "headlight"
+		hl.position = Vector3(0, 0.9 if a.kind != "bus" and a.kind != "lorry" else 1.1, -float(KINDS[a.kind].len) * 0.5)
+		hl.rotation = Vector3(-0.12, 0, 0)
+		hl.spot_range = 28.0 if not (a.kind in ["bike", "scooter", "cycle"]) else 20.0
+		hl.spot_angle = 32.0
+		hl.light_energy = 0.0
+		hl.light_color = Color(1.0, 0.93, 0.8)
+		hl.shadow_enabled = false
+		hl.distance_fade_enabled = true
+		hl.distance_fade_begin = 60.0
+		hl.distance_fade_length = 15.0
+		body.add_child(hl)
 		var cs := CollisionShape3D.new()
 		var box := BoxShape3D.new()
 		var K: Dictionary = KINDS[a.kind]

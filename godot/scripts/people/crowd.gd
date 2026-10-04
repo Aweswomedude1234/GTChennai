@@ -25,6 +25,7 @@ var enabled := true
 var stats := {"agents": 0, "near": 0}
 var _road_cache := {}
 var fixed := {}                # chunk key → Array of stationary agents (vendors, tea drinkers)
+var on_road := {}              # road index → Array[Vector3] of people walking in the carriageway (traffic yields)
 var extra: Array = []          # [spec index, world Transform3D, Appearance, clip] drawn this frame (traffic riders)
 
 func setup(p: CityPack) -> void:
@@ -238,7 +239,19 @@ func _clip(a: Dictionary) -> String:
 	if a.state != "walk": return a.state
 	return "walk" if a.speed > 1.15 else "walk_slow"
 
+func _collect_on_road() -> void:
+	on_road.clear()
+	for a in agents:
+		if a.has("fixed") or a.state != "walk": continue
+		var p: Vector3 = a.p
+		if p.y > 0.05: continue
+		if absf(p.x - focus.x) > 150.0 or absf(p.z - focus.z) > 150.0: continue
+		var k := int(a.ri)
+		if not on_road.has(k): on_road[k] = []
+		on_road[k].append(p)
+
 func _render() -> void:
+	_collect_on_road()
 	# near tier: pooled skeletal actors for the closest agents
 	var near_list: Array = []
 	for a in agents:
