@@ -42,7 +42,7 @@ void vertex() {
 	VERTEX += (mix(pa, pb, t) - 0.5) * 2.0 * vat_range;
 	NORMAL = normalize(mix(na, nb, t) * 2.0 - 1.0);
 	lp = VERTEX;
-	part = int(UV2.y * 8.0);
+	part = int((1.0 - UV2.y) * 8.0);   // glTF stores V flipped
 	top_c = COLOR.rgb;
 	low_c = unpack_rgb(INSTANCE_CUSTOM.w);
 	skin_c = SKIN[clamp(int(COLOR.a * 8.0 + 0.5), 0, 8)];

@@ -27,7 +27,7 @@ mat3 rot_y(float a) { float c = cos(a), s = sin(a); return mat3(vec3(c, 0, -s), 
 
 void vertex() {
 	part = int(UV2.x * 8.0);
-	shade = UV2.y;
+	shade = 1.0 - UV2.y;   // glTF stores V flipped
 	float state = INSTANCE_CUSTOM.x;
 	float t = TIME * INSTANCE_CUSTOM.z * 6.0 + INSTANCE_CUSTOM.y;
 	seed = INSTANCE_CUSTOM.w;

@@ -10,7 +10,7 @@ const DESPAWN_R := 175.0
 const SPECIES := {
 	"dog": {"coats": ["#c08850", "#c08850", "#d4a46c", "#8a5530", "#1c1814", "#e4cfa6", "#a8602e", "#6e6258"], "patch": "#f0e8da", "patchy": 0.55,
 		"speed": 1.1, "gait": 1.4, "ranks": [1, 2, 3, 2, 1, 0.5], "per_100m": 1.6},
-	"cow": {"coats": ["#e8e4dc", "#e0dcd2", "#b8b4ac", "#a09c94", "#8a6040", "#f0ece4"], "patch": "#3a3632", "patchy": 0.25,
+	"cow": {"coats": ["#e8e4dc", "#e0dcd2", "#b8b4ac", "#a09c94", "#8a6040", "#f0ece4"], "patch": "#3a3632", "patchy": 0.12,
 		"speed": 0.55, "gait": 0.6, "ranks": [0.6, 1, 0.8, 0.3, 0.1, 0.0], "per_100m": 0.45},
 	"goat": {"coats": ["#1c1814", "#2a221c", "#6a4228", "#e8e2d8", "#8a6a4a"], "patch": "#f2eee6", "patchy": 0.45,
 		"speed": 0.8, "gait": 1.3, "ranks": [1, 0.6, 0.2, 0.0, 0.0, 0.0], "per_100m": 0.25},
